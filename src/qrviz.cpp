@@ -1,6 +1,6 @@
 #include "../include/test_qt/qrviz.hpp"
 #include <QDebug>
-
+//Constructor: add the rviz widget to the vertical layoutbox, initialize rviz manager.
 qrviz::qrviz(QVBoxLayout *layout)
 {
     _render_panel = new rviz::RenderPanel();
@@ -14,26 +14,41 @@ qrviz::qrviz(QVBoxLayout *layout)
     _manger->startUpdate();
 }
 
-void qrviz::display_grid(){
-    bool enable = true;
-    int cell_count = 16;
+//Display the RVIZ Grid
+void qrviz::display_grid(bool enable, QColor color, int cell_num, double cell_size){
     if (_grid != nullptr){
         delete _grid;
         _grid = nullptr;
     }
     _grid = _manger->createDisplay("rviz/Grid","my_grid",enable);
-    _grid->subProp("Plane Cell Count")->setValue(cell_count);
+    _grid->subProp("Color")->setValue(color);
+    _grid->subProp("Plane Cell Count")->setValue(cell_num);
+    _grid->subProp("Cell Size")->setValue(cell_size);
     ROS_ASSERT(_grid != NULL);
 }
 
-void qrviz::display_scan(){
-    bool enable = true;
+
+//Display the RVIZ laser point cloud
+void qrviz::display_scan(bool enable,QString topic_name, double point_size){
+
     if(_scan_display != nullptr){
         delete _scan_display;
         _scan_display = nullptr;
     }
-    _manger->setFixedFrame("laser_link");
     _scan_display = _manger->createDisplay("rviz/LaserScan","my_laserScan",enable);
-    _scan_display->subProp("Topic")->setValue("/scan");
+    _scan_display->subProp("Topic")->setValue(topic_name);
+    _scan_display->subProp("Size (m)")->setValue(point_size);
     ROS_ASSERT(_scan_display != NULL);
+}
+
+//Display the RVIZ camera elements
+void qrviz::display_camera(bool enable, QString topic_name){
+    if(_camera_display != nullptr){
+        delete _camera_display;
+        _camera_display = nullptr;
+    }
+    _camera_display = _manger->createDisplay("rviz/Camera","my_camera",enable);
+    _camera_display->subProp("Image Topic")->setValue(topic_name);
+    ROS_ASSERT(_camera_display != NULL);
+
 }

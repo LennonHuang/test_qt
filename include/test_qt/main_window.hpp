@@ -14,6 +14,7 @@
 
 #include <QtWidgets/QMainWindow>
 #include <QtGui>
+#include <QSpinBox>
 #include "ui_main_window.h"
 #include "qnode.hpp"
 #include "worker.hpp"
@@ -64,6 +65,12 @@ public Q_SLOTS:
     void window_update_imu(QString imu_data);
     void catch_imu_connection_error(QString error);
 
+    //RVIZ
+    void slot_fixed_frame_changed(QString);
+    void slot_mainwindow_display_grid(int state);
+    void slot_mainwindow_display_scan(int state);
+    void slot_mainwindow_display_camera(int state);
+
     /******************************************
     ** Manual connections
     *******************************************/
@@ -77,6 +84,17 @@ private:
     Worker *nano_worker;
     qrviz *my_rviz;
 
+    //RVIZ ui Elements
+
+    QCheckBox *grid_checkbox;
+    QCheckBox *scan_check_box;
+    QComboBox *fixed_frame_box;
+    QSpinBox *grid_cell_num_box;
+    QComboBox *grid_color_box;
+    QComboBox *scan_topic_name_box;
+    QDoubleSpinBox *grid_cell_size_box;
+    QComboBox *camera_topic_name_box;
+    QDoubleSpinBox *laser_point_size_box;
 };
 
 }  // namespace test_qt

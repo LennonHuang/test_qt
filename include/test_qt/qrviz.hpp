@@ -15,14 +15,16 @@ class qrviz
 {
 public:
     qrviz(QVBoxLayout *layout);
-    void display_grid();
-    void display_scan();
+    void display_grid(bool enable,QColor color, int cell_num,double cell_size);
+    void display_scan(bool enable,QString topic_name, double point_size);
+    void display_camera(bool enable, QString topic_name);
+    rviz::VisualizationManager *_manger;
 
 private:
     rviz::RenderPanel *_render_panel;
-    rviz::VisualizationManager *_manger;
     rviz::Display *_grid = nullptr;
     rviz::Display *_scan_display = nullptr;
+    rviz::Display *_camera_display = nullptr;
 
 };
 
