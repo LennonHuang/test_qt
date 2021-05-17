@@ -17,6 +17,7 @@
 #include "ui_main_window.h"
 #include "qnode.hpp"
 #include "worker.hpp"
+#include "qrviz.hpp"
 #include <QtSerialPort/QSerialPort>
 
 /*****************************************************************************
@@ -52,7 +53,7 @@ public Q_SLOTS:
     ** Format: on_UiElement_Signal()
 	*******************************************/
 	void on_actionAbout_triggered();
-	void on_button_connect_clicked(bool check );
+    void on_button_connect_clicked(bool check );
 	void on_checkbox_use_environment_stateChanged(int state);
     void on_plugin_test_btn_clicked();
     void on_imu_connect_btn_clicked();
@@ -61,6 +62,7 @@ public Q_SLOTS:
     void on_serial_scan_btn_clicked();
     void on_led_btn_clicked();
     void window_update_imu(QString imu_data);
+    void catch_imu_connection_error(QString error);
 
     /******************************************
     ** Manual connections
@@ -73,6 +75,7 @@ private:
     QProcess *plg;
 	QNode qnode;
     Worker *nano_worker;
+    qrviz *my_rviz;
 
 };
 

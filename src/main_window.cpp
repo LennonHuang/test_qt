@@ -77,6 +77,9 @@ void MainWindow::on_button_connect_clicked(bool check ) {
 			showNoMasterMessage();
 		} else {
 			ui.button_connect->setEnabled(false);
+            my_rviz = new qrviz(ui.layout_rviz);//Create embedded RVIZ
+            my_rviz->display_grid();//Display the grid (TODO: transfer it to RVIZ setting checkbox)
+            my_rviz->display_scan();//Display the laser point cloud (TODO: transfer it to RVIZ setting checkbox)
 		}
 	} else {
 		if ( ! qnode.init(ui.line_edit_master->text().toStdString(),
@@ -87,6 +90,9 @@ void MainWindow::on_button_connect_clicked(bool check ) {
 			ui.line_edit_master->setReadOnly(true);
 			ui.line_edit_host->setReadOnly(true);
 			ui.line_edit_topic->setReadOnly(true);
+            my_rviz = new qrviz(ui.layout_rviz);//Create embedded RVIZ
+            my_rviz->display_grid();//Display the grid (TODO: transfer it to RVIZ setting checkbox)
+            my_rviz->display_scan();//Display the laser point cloud (TODO: transfer it to RVIZ setting checkbox)
 		}
 	}
 }
@@ -168,9 +174,14 @@ void MainWindow::closeEvent(QCloseEvent *event)
 	QMainWindow::closeEvent(event);
 }
 
-void MainWindow::window_update_imu(QString imu_data){{
-        ui.gyro_label->setText(imu_data);
-                                                     }
+void MainWindow::window_update_imu(QString imu_data){
+    QStringList imu_text = imu_data.split(";");
+    ui.x_gyro_label->setText(imu_text[0]);
+    ui.y_gyro_label->setText(imu_text[1]);
+    ui.z_gyro_label->setText(imu_text[2]);
+    ui.x_acc_label->setText(imu_text[3]);
+    ui.y_acc_label->setText(imu_text[4]);
+    ui.z_acc_label->setText(imu_text[5].trimmed());
 }
 
 QStringList MainWindow::scanPort(){
@@ -201,10 +212,16 @@ void MainWindow::on_imu_connect_btn_clicked(){
     connect( nano_worker, &Worker::finished, nano_worker, &Worker::deleteLater);
     connect( imu_thread, &QThread::finished, imu_thread, &QThread::deleteLater);
     connect( nano_worker, SIGNAL(update_imu(QString)), this, SLOT(window_update_imu(QString)));
+    connect( nano_worker, SIGNAL(imu_error(QString)), this, SLOT(catch_imu_connection_error(QString)));
     imu_thread->start();
     ui.imu_connect_btn->setEnabled(false);
     ui.imu_status_label->setText("IMU Connected");
 
+}
+
+void MainWindow::catch_imu_connection_error(QString error){
+    //std::cout << error.toUtf8().constData();
+    ui.imu_status_label->setText("IMU " + error);
 }
 
 void MainWindow::on_imu_disconnect_btn_clicked(){

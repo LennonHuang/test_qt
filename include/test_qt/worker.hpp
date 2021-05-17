@@ -18,6 +18,7 @@ public slots:
 signals:
     void finished();
     void update_imu(QString);
+    void imu_error(QString e);
 
 private:
     QSerialPort *nano_imu_port;

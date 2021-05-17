@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1051</width>
-    <height>663</height>
+    <width>1075</width>
+    <height>779</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -51,6 +51,9 @@
       </item>
       <item>
        <widget class="QLabel" name="imu_status_label">
+        <property name="styleSheet">
+         <string notr="true">color: red;</string>
+        </property>
         <property name="text">
          <string>IMU Status:</string>
         </property>
@@ -130,7 +133,7 @@
          <string notr="true">background-color: yellow;</string>
         </property>
         <property name="text">
-         <string>LED ON</string>
+         <string>LED off</string>
         </property>
        </widget>
       </item>
@@ -141,7 +144,7 @@
       <item>
        <widget class="QPushButton" name="serial_scan_btn">
         <property name="text">
-         <string>Scan Port</string>
+         <string>Scan Serial Port</string>
         </property>
        </widget>
       </item>
@@ -162,7 +165,7 @@
        <locale language="English" country="Australia"/>
       </property>
       <property name="currentIndex">
-       <number>0</number>
+       <number>1</number>
       </property>
       <widget class="QWidget" name="tab_status">
        <attribute name="title">
@@ -188,11 +191,21 @@
            <string>Logging</string>
           </property>
           <layout class="QGridLayout" name="gridLayout_3">
-           <item row="0" column="0">
+           <item row="0" column="1">
             <widget class="QListView" name="view_logging"/>
            </item>
           </layout>
          </widget>
+        </item>
+       </layout>
+      </widget>
+      <widget class="QWidget" name="tab">
+       <attribute name="title">
+        <string>Visualization Display</string>
+       </attribute>
+       <layout class="QVBoxLayout" name="verticalLayout_7">
+        <item>
+         <layout class="QVBoxLayout" name="layout_rviz"/>
         </item>
        </layout>
       </widget>
@@ -205,7 +218,7 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>1051</width>
+     <width>1075</width>
      <height>22</height>
     </rect>
    </property>

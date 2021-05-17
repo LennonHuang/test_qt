@@ -12,7 +12,7 @@ project(test_qt)
 ##############################################################################
 
 # qt_build provides the qt cmake glue, roscpp the comms for a default talker
-find_package(catkin REQUIRED COMPONENTS qt_build roscpp)
+find_package(catkin REQUIRED COMPONENTS qt_build roscpp rviz)
 find_package(Qt5 REQUIRED Core Widgets SerialPort)
 set(QT_LIBRARIES Qt5::Widgets)
 include_directories(${catkin_INCLUDE_DIRS})
