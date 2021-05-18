@@ -284,6 +284,7 @@ void MainWindow::closeEvent(QCloseEvent *event)
 	QMainWindow::closeEvent(event);
 }
 
+//Once the worker emit update_imu, the Main Gui will update the display.
 void MainWindow::window_update_imu(QString imu_data){
     QStringList imu_text = imu_data.split(";");
     ui.x_gyro_label->setText(imu_text[0]);
@@ -294,14 +295,8 @@ void MainWindow::window_update_imu(QString imu_data){
     ui.z_acc_label->setText(imu_text[5].trimmed());
 }
 
-QStringList MainWindow::scanPort(){
-    QStringList scan_result;
-    foreach (const QSerialPortInfo &info, QSerialPortInfo::availablePorts()) {
-        scan_result.append(info.portName());
-    }
-    return scan_result;
-}
 
+//Control the LED
 void MainWindow::on_led_btn_clicked(){
     if(!nano_worker->is_led_on){
         nano_worker->is_led_on = true;
@@ -312,48 +307,73 @@ void MainWindow::on_led_btn_clicked(){
     }
 }
 
+//Try to connect to the imu//
+//A new thread is created for not blocking the main GUI. A customized Worker object is added into the new thread.
+//Once the QTheard has started, it will trigger Worker's process method.
+//During Worker::process(), worker will emit "update_imu" signal (in a loop till exit command given) which triggers main GUI "window_update_imu".
+//Worker will also check connection error during process, and if there is any error, signal "imu_error" will be emitted.
+//Once the Worker has finished its job, the exit function of thread and the worker will execute.
 void MainWindow::on_imu_connect_btn_clicked(){
     QThread *imu_thread = new QThread();
-    nano_worker = new Worker();
+    nano_worker = new Worker(ui.serial_comboBox->currentText(),QSerialPort::Baud9600);
     nano_worker->moveToThread(imu_thread);
-    //Connect the worker and thread
+    //Connect the worker and thread//
     connect( imu_thread, &QThread::started, nano_worker, &Worker::process);
     connect( nano_worker, &Worker::finished, imu_thread, &QThread::quit);
     connect( nano_worker, &Worker::finished, nano_worker, &Worker::deleteLater);
     connect( imu_thread, &QThread::finished, imu_thread, &QThread::deleteLater);
+    //Connect imu update and checking error signals with the main GUI window.
     connect( nano_worker, SIGNAL(update_imu(QString)), this, SLOT(window_update_imu(QString)));
     connect( nano_worker, SIGNAL(imu_error(QString)), this, SLOT(catch_imu_connection_error(QString)));
+    //Start the thread which tigeer the worker to work.
     imu_thread->start();
+    //Disable the button in case the user presses the connect button again.
     ui.imu_connect_btn->setEnabled(false);
-    ui.imu_status_label->setText("IMU Connected");
-
+    //Display the status label and indicate which port.
+    ui.imu_status_label->setText("IMU Connected at " + ui.serial_comboBox->currentText());
 }
 
+//Fail from trying to connect the IMU. Display the error source.
 void MainWindow::catch_imu_connection_error(QString error){
-    //std::cout << error.toUtf8().constData();
     ui.imu_status_label->setText("IMU " + error);
+    QMessageBox::warning(this,tr("Connection Error"),tr("Please check the serial port!"),QMessageBox::Ok);
 }
 
+//Disconnect the Arduino.
 void MainWindow::on_imu_disconnect_btn_clicked(){
-    nano_worker->is_processing = false;
+    nano_worker->is_processing = false;//Break the worker processing loop.
     emit nano_worker->finished();
-
+    //Update the error on display
     ui.imu_connect_btn->setEnabled(true);
     ui.imu_disconnect_btn->setEnabled(true);
     ui.imu_status_label->setText("IMU Disconnected");
 }
 
+//Refresh the Connect button.
 void MainWindow::on_imu_refresh_btn_clicked(){
     ui.imu_connect_btn->setEnabled(true);
     ui.imu_disconnect_btn->setEnabled(true);
     ui.imu_status_label->setText("Refreshed");
 }
+
+//Scan avilable serial port and return the list.
+QStringList MainWindow::scanPort(){
+    QStringList scan_result;
+    foreach (const QSerialPortInfo &info, QSerialPortInfo::availablePorts()) {
+        scan_result.append(info.portName());
+    }
+    return scan_result;
+}
+
+//Display all avaiable ports on QComboBox
 void MainWindow::on_serial_scan_btn_clicked(){
     ui.serial_comboBox->clear();
     QStringList qls = scanPort();
     ui.serial_comboBox->addItems(qls);
 }
 
+//This is a button test for Python plugin.
+//Nothing but a bash shell.
 void MainWindow::on_plugin_test_btn_clicked(){
     if(!plugin_on){
        plg = new QProcess(this);

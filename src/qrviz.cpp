@@ -1,6 +1,9 @@
 #include "../include/test_qt/qrviz.hpp"
 #include <QDebug>
-//Constructor: add the rviz widget to the vertical layoutbox, initialize rviz manager.
+
+//Constructor:
+//1. Add the rviz widget to the vertical layoutbox
+//2. Initialize rviz manager.
 qrviz::qrviz(QVBoxLayout *layout)
 {
     _render_panel = new rviz::RenderPanel();

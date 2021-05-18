@@ -8,7 +8,7 @@ class Worker : public QObject
 {
     Q_OBJECT
 public:
-    Worker();
+    Worker(QString port_name, QSerialPort::BaudRate port_rate);
     ~Worker();
     bool is_processing = false;
     bool is_led_on = false;
