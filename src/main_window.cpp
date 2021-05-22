@@ -15,6 +15,7 @@
 #include "../include/test_qt/main_window.hpp"
 #include <QtSerialPort/QSerialPort>
 #include <QtSerialPort/QSerialPortInfo>
+#include <QDebug>
 /*****************************************************************************
 ** Namespaces
 *****************************************************************************/
@@ -52,20 +53,30 @@ MainWindow::MainWindow(int argc, char** argv, QWidget *parent)
         on_button_connect_clicked(true);
     }
 
+
     //Init All RVIZ Elements
     //init the tree widget
     ui.rviz_treeWidget->setEnabled(false);
     //init the fixed frame setting
-    QTreeWidgetItem *coordinate = new QTreeWidgetItem(QStringList() << "Coordinate");
+    QTreeWidgetItem *coordinate = new QTreeWidgetItem(QStringList() << "Frame Name");
     QTreeWidgetItem *fixed_frame = new QTreeWidgetItem(QStringList() << "Fixed Frame");
     fixed_frame_box = new QComboBox();
-    fixed_frame_box->addItems(QStringList() << "odom" << "laser_link" << "map");
+    fixed_frame_box->addItems(QStringList() << "gps" <<"odom" << "laser_link" << "map");
     fixed_frame_box->setEditable(true);
     ui.rviz_treeWidget->addTopLevelItem(coordinate);
     //Connect the box, the key and value (both of them are QTreeWidgets)
     coordinate->addChild(fixed_frame);
     ui.rviz_treeWidget->setItemWidget(fixed_frame, 1, fixed_frame_box);
     connect(fixed_frame_box,SIGNAL(currentTextChanged(QString)),this,SLOT(slot_fixed_frame_changed(QString)));
+
+
+    //init tf//
+    QTreeWidgetItem *tf = new QTreeWidgetItem(QStringList() << "Display All Frame");
+    tf_check_box = new QCheckBox();
+    ui.rviz_treeWidget->addTopLevelItem(tf);
+    ui.rviz_treeWidget->setItemWidget(tf,1,tf_check_box);
+    //conenct checkbox and tf display
+    connect(tf_check_box,SIGNAL(stateChanged(int)),this,SLOT(slot_mainwindow_display_tf(int)));
 
     //init grid//
     QTreeWidgetItem *grid = new QTreeWidgetItem(QStringList() << "Grid");
@@ -95,7 +106,17 @@ MainWindow::MainWindow(int argc, char** argv, QWidget *parent)
     //connect the checkbox on mainwindow to update the grid
     connect(grid_checkbox, SIGNAL(stateChanged(int)),this,SLOT(slot_mainwindow_display_grid(int)));
 
-    //init scan//
+    //init GPS//
+    QTreeWidgetItem *gps = new QTreeWidgetItem(QStringList() << "Display GPS Map");
+    gps_check_box = new QCheckBox();
+    ui.rviz_treeWidget->addTopLevelItem(gps);
+    ui.rviz_treeWidget->setItemWidget(gps,1,gps_check_box);
+    //conenct checkbox and tf display
+    connect(gps_check_box,SIGNAL(stateChanged(int)),this,SLOT(slot_mainwindow_display_gps(int)));
+    //connect MainWindow display
+    connect(&qnode, SIGNAL(update_gps(const sensor_msgs::NavSatFix)), this,SLOT(slot_table_display_gps(const sensor_msgs::NavSatFix)));
+
+    //init laser scan//
     QTreeWidgetItem *laser_scan = new QTreeWidgetItem(QStringList() << "Laser");
     scan_check_box = new QCheckBox();
     ui.rviz_treeWidget->addTopLevelItem(laser_scan);
@@ -135,6 +156,17 @@ MainWindow::~MainWindow() {}
 /*****************************************************************************
 ** Implementation [Slots]
 *****************************************************************************/
+
+void MainWindow::slot_mainwindow_display_gps(int state){
+    bool enable = state>=1?true:false;
+    my_rviz->display_gps(enable);
+}
+
+void MainWindow::slot_mainwindow_display_tf(int state){
+    bool enable = state>=1?true:false;
+    my_rviz->display_tf(enable);
+}
+
 void MainWindow::slot_mainwindow_display_camera(int state){
     bool enable = state>=1?true:false;
     my_rviz->display_camera(enable,camera_topic_name_box->currentText());
@@ -238,7 +270,7 @@ void MainWindow::updateLoggingView() {
 *****************************************************************************/
 
 void MainWindow::on_actionAbout_triggered() {
-    QMessageBox::about(this, tr("About ..."),tr("<h2>PACKAGE_NAME Test Program 0.10</h2><p>Copyright Yujin Robot</p><p>This package needs an about description.</p>"));
+    QMessageBox::about(this, tr("About ..."),tr("..."));
 }
 
 /*****************************************************************************
@@ -281,8 +313,14 @@ void MainWindow::WriteSettings() {
 void MainWindow::closeEvent(QCloseEvent *event)
 {
 	WriteSettings();
+    if(plg != nullptr){
+        if(plg->state() == QProcess::ProcessState::Running){
+            plg->close();
+        }
+    }
 	QMainWindow::closeEvent(event);
 }
+
 
 //Once the worker emit update_imu, the Main Gui will update the display.
 void MainWindow::window_update_imu(QString imu_data){
@@ -305,6 +343,10 @@ void MainWindow::on_led_btn_clicked(){
         nano_worker->is_led_on = false;
         ui.led_btn->setText("LED off");
     }
+}
+
+void MainWindow::on_quit_button_clicked(){
+    qDebug() << "Quiting MainWindow...";
 }
 
 //Try to connect to the imu//
@@ -365,11 +407,18 @@ QStringList MainWindow::scanPort(){
     return scan_result;
 }
 
-//Display all avaiable ports on QComboBox
+//Display all avaiable ports for IMU
 void MainWindow::on_serial_scan_btn_clicked(){
     ui.serial_comboBox->clear();
     QStringList qls = scanPort();
     ui.serial_comboBox->addItems(qls);
+}
+
+//Display all avaiable ports for GPS
+void MainWindow::on_serial_scan_gps_btn_clicked(){
+    ui.serial_gps_serial_ComboBox->clear();
+    QStringList qls = scanPort();
+    ui.serial_gps_serial_ComboBox->addItems(qls);
 }
 
 //This is a button test for Python plugin.
@@ -382,6 +431,60 @@ void MainWindow::on_plugin_test_btn_clicked(){
     }
     plg->write("rqt_mypkg\n");
     std::cout << "Processing" << std::endl;
+    plg->waitForStarted();
+
+}
+
+void MainWindow::on_gps_connect_btn_clicked(){
+    QThread *gps_thread = new QThread();
+    gps_worker = new GPS_Worker(ui.serial_gps_serial_ComboBox->currentText(),"9600");
+    gps_worker->moveToThread(gps_thread);
+    //Connect the worker and thread//
+    connect( gps_thread, &QThread::started, gps_worker, &GPS_Worker::process);
+    connect( gps_worker, &GPS_Worker::finished, gps_thread, &QThread::quit);
+    connect( gps_worker, &GPS_Worker::finished, gps_worker, &GPS_Worker::deleteLater);
+    connect( gps_thread, &QThread::finished, gps_thread, &QThread::deleteLater);
+    //Connect worker signal with Main GUI
+    connect(gps_worker, SIGNAL(success_launch(QString)), this, SLOT(window_gps_status(QString)));
+    connect(gps_worker, SIGNAL(error(QString)), this, SLOT(window_gps_status(QString)));
+
+    gps_thread->start();
+    ui.gps_connect_btn->setEnabled(false);
+    ui.gps_status_label->setText("Trying to connect to GPS...");
+}
+
+void MainWindow::on_gps_disconnect_btn_clicked(){
+    //Break the loop inside GPS_Worker process()
+    gps_worker->is_processing = false;
+    ui.gps_connect_btn->setEnabled(true);
+    ui.gps_disconnect_btn->setEnabled(false);
+    QProcess *node_killer = new QProcess();
+    node_killer->start("bash");
+    node_killer->write("rosnode kill /nmea_serial_driver \n");
+    ui.gps_status_label->setText("Disconnecting GPS");
+    node_killer->waitForReadyRead(2000);
+    qDebug() << node_killer->readAllStandardOutput();
+    node_killer->close();
+    ui.gps_status_label->setText("GPS disconnected");
+}
+
+void MainWindow::window_gps_status(QString status){
+    if(status != "GPS Launched"){
+        ui.gps_connect_btn->setEnabled(true);
+        ui.gps_disconnect_btn->setEnabled(false);
+        ui.gps_status_label->setText("Connect Again: " + status);
+    }else{
+        ui.gps_status_label->setText(status);
+        ui.gps_disconnect_btn->setEnabled(true);
+    }
+}
+
+void MainWindow::slot_table_display_gps(const sensor_msgs::NavSatFix msg){
+
+    ui.label_altitude_num->setNum(msg.altitude);
+    ui.label_latitude_num->setNum(msg.latitude);
+    ui.label_longitude_num->setNum(msg.longitude);
+    //qDebug("Heard From GPS");
 
 }
 

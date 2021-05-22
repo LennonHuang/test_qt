@@ -18,6 +18,8 @@ public:
     void display_grid(bool enable,QColor color, int cell_num,double cell_size);
     void display_scan(bool enable,QString topic_name, double point_size);
     void display_camera(bool enable, QString topic_name);
+    void display_tf(bool enable);
+    void display_gps(bool enable);
     rviz::VisualizationManager *_manger;
 
 private:
@@ -25,6 +27,9 @@ private:
     rviz::Display *_grid = nullptr;
     rviz::Display *_scan_display = nullptr;
     rviz::Display *_camera_display = nullptr;
+    rviz::Display *_tf_display = nullptr;
+    rviz::Display *_gps_frame_display = nullptr;
+    rviz::Display *_gps_map_display = nullptr;
 
 };
 

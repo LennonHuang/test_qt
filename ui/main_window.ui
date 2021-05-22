@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1075</width>
-    <height>779</height>
+    <width>1095</width>
+    <height>781</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -23,135 +23,273 @@
   <widget class="QWidget" name="centralwidget">
    <layout class="QVBoxLayout" name="verticalLayout_5">
     <item>
-     <layout class="QVBoxLayout" name="verticalLayout_4">
-      <item>
-       <layout class="QHBoxLayout" name="horizontalLayout">
+     <widget class="QTabWidget" name="SensorTab">
+      <property name="currentIndex">
+       <number>1</number>
+      </property>
+      <widget class="QWidget" name="tab_1">
+       <attribute name="title">
+        <string>IMU</string>
+       </attribute>
+       <layout class="QVBoxLayout" name="verticalLayout_4">
         <item>
-         <widget class="QPushButton" name="imu_connect_btn">
-          <property name="text">
-           <string>Connect IMU</string>
-          </property>
-         </widget>
-        </item>
-        <item>
-         <widget class="QPushButton" name="imu_disconnect_btn">
-          <property name="text">
-           <string>Disconnect IMU</string>
-          </property>
-         </widget>
-        </item>
-       </layout>
-      </item>
-      <item>
-       <widget class="QPushButton" name="imu_refresh_btn">
-        <property name="text">
-         <string>Refresh IMU Connection</string>
-        </property>
-       </widget>
-      </item>
-      <item>
-       <widget class="QLabel" name="imu_status_label">
-        <property name="styleSheet">
-         <string notr="true">color: red;</string>
-        </property>
-        <property name="text">
-         <string>IMU Status:</string>
-        </property>
-       </widget>
-      </item>
-      <item>
-       <layout class="QHBoxLayout" name="horizontalLayout_2">
-        <item>
-         <layout class="QVBoxLayout" name="verticalLayout_9">
+         <layout class="QHBoxLayout" name="horizontalLayout">
           <item>
-           <widget class="QLabel" name="gyro_label">
+           <widget class="QPushButton" name="imu_connect_btn">
             <property name="text">
-             <string>Gyro (deg/s):</string>
+             <string>Connect IMU</string>
             </property>
            </widget>
           </item>
           <item>
-           <widget class="QLabel" name="x_gyro_label">
+           <widget class="QPushButton" name="imu_disconnect_btn">
             <property name="text">
-             <string>X: </string>
-            </property>
-           </widget>
-          </item>
-          <item>
-           <widget class="QLabel" name="y_gyro_label">
-            <property name="text">
-             <string>Y: </string>
-            </property>
-           </widget>
-          </item>
-          <item>
-           <widget class="QLabel" name="z_gyro_label">
-            <property name="text">
-             <string>Z: </string>
+             <string>Disconnect IMU</string>
             </property>
            </widget>
           </item>
          </layout>
         </item>
         <item>
-         <layout class="QVBoxLayout" name="verticalLayout_8">
+         <widget class="QPushButton" name="imu_refresh_btn">
+          <property name="text">
+           <string>Refresh IMU Connection</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QLabel" name="imu_status_label">
+          <property name="styleSheet">
+           <string notr="true">color: red;</string>
+          </property>
+          <property name="text">
+           <string>IMU Status:</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <layout class="QHBoxLayout" name="horizontalLayout_2">
           <item>
-           <widget class="QLabel" name="acc_label">
+           <layout class="QVBoxLayout" name="verticalLayout_9">
+            <item>
+             <widget class="QLabel" name="gyro_label">
+              <property name="text">
+               <string>Gyro (deg/s):</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QLabel" name="x_gyro_label">
+              <property name="text">
+               <string>X: </string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QLabel" name="y_gyro_label">
+              <property name="text">
+               <string>Y: </string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QLabel" name="z_gyro_label">
+              <property name="text">
+               <string>Z: </string>
+              </property>
+             </widget>
+            </item>
+           </layout>
+          </item>
+          <item>
+           <layout class="QVBoxLayout" name="verticalLayout_8">
+            <item>
+             <widget class="QLabel" name="acc_label">
+              <property name="text">
+               <string>Accelermeter (g):</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QLabel" name="x_acc_label">
+              <property name="text">
+               <string>X: </string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QLabel" name="y_acc_label">
+              <property name="text">
+               <string>Y: </string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QLabel" name="z_acc_label">
+              <property name="text">
+               <string>Z: </string>
+              </property>
+             </widget>
+            </item>
+           </layout>
+          </item>
+         </layout>
+        </item>
+        <item>
+         <widget class="QPushButton" name="led_btn">
+          <property name="styleSheet">
+           <string notr="true">background-color: yellow;</string>
+          </property>
+          <property name="text">
+           <string>LED off</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <layout class="QHBoxLayout" name="scan_imu">
+          <item>
+           <widget class="QPushButton" name="serial_scan_btn">
             <property name="text">
-             <string>Accelermeter (g):</string>
+             <string>Scan IMU Source Port</string>
             </property>
            </widget>
           </item>
           <item>
-           <widget class="QLabel" name="x_acc_label">
+           <widget class="QComboBox" name="serial_comboBox"/>
+          </item>
+         </layout>
+        </item>
+       </layout>
+      </widget>
+      <widget class="QWidget" name="tab_2">
+       <attribute name="title">
+        <string>GPS</string>
+       </attribute>
+       <layout class="QVBoxLayout" name="verticalLayout_6">
+        <item>
+         <layout class="QHBoxLayout" name="horizontalLayout_3">
+          <item>
+           <layout class="QHBoxLayout" name="scan_gps">
+            <item>
+             <widget class="QPushButton" name="serial_scan_gps_btn">
+              <property name="text">
+               <string>Scan GPS Source Port</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QComboBox" name="serial_gps_serial_ComboBox"/>
+            </item>
+           </layout>
+          </item>
+          <item>
+           <widget class="QPushButton" name="gps_connect_btn">
             <property name="text">
-             <string>X: </string>
+             <string>Connect GPS</string>
             </property>
            </widget>
           </item>
           <item>
-           <widget class="QLabel" name="y_acc_label">
+           <widget class="QPushButton" name="gps_disconnect_btn">
             <property name="text">
-             <string>Y: </string>
-            </property>
-           </widget>
-          </item>
-          <item>
-           <widget class="QLabel" name="z_acc_label">
-            <property name="text">
-             <string>Z: </string>
+             <string>Disconnect GPS</string>
             </property>
            </widget>
           </item>
          </layout>
         </item>
+        <item>
+         <layout class="QVBoxLayout" name="GPS">
+          <item>
+           <widget class="QLabel" name="gps_status_label">
+            <property name="styleSheet">
+             <string notr="true">color: red;</string>
+            </property>
+            <property name="text">
+             <string>GPS Status:</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QLabel" name="gps_label">
+            <property name="text">
+             <string>GPS:</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <layout class="QVBoxLayout" name="GPS_num">
+            <item>
+             <layout class="QHBoxLayout" name="latitude">
+              <item>
+               <widget class="QLabel" name="label_latitude">
+                <property name="text">
+                 <string>Latitude: </string>
+                </property>
+               </widget>
+              </item>
+              <item>
+               <widget class="QLabel" name="label_latitude_num">
+                <property name="text">
+                 <string/>
+                </property>
+               </widget>
+              </item>
+             </layout>
+            </item>
+            <item>
+             <layout class="QHBoxLayout" name="longitude">
+              <item>
+               <widget class="QLabel" name="label_longitude">
+                <property name="text">
+                 <string>Longitude:</string>
+                </property>
+               </widget>
+              </item>
+              <item>
+               <widget class="QLabel" name="label_longitude_num">
+                <property name="text">
+                 <string/>
+                </property>
+               </widget>
+              </item>
+             </layout>
+            </item>
+            <item>
+             <layout class="QHBoxLayout" name="altitude">
+              <item>
+               <widget class="QLabel" name="label_altitude">
+                <property name="text">
+                 <string>Altitude: </string>
+                </property>
+               </widget>
+              </item>
+              <item>
+               <widget class="QLabel" name="label_altitude_num">
+                <property name="text">
+                 <string/>
+                </property>
+               </widget>
+              </item>
+             </layout>
+            </item>
+           </layout>
+          </item>
+         </layout>
+        </item>
        </layout>
-      </item>
-      <item>
-       <widget class="QPushButton" name="led_btn">
-        <property name="styleSheet">
-         <string notr="true">background-color: yellow;</string>
-        </property>
-        <property name="text">
-         <string>LED off</string>
-        </property>
-       </widget>
-      </item>
-     </layout>
-    </item>
-    <item>
-     <layout class="QHBoxLayout" name="horizontalLayout_7">
-      <item>
-       <widget class="QPushButton" name="serial_scan_btn">
-        <property name="text">
-         <string>Scan Serial Port</string>
-        </property>
-       </widget>
-      </item>
-      <item>
-       <widget class="QComboBox" name="serial_comboBox"/>
-      </item>
-     </layout>
+      </widget>
+      <widget class="QWidget" name="tab_3">
+       <attribute name="title">
+        <string>Laser</string>
+       </attribute>
+      </widget>
+      <widget class="QWidget" name="tab_4">
+       <attribute name="title">
+        <string>Fisheye Camera</string>
+       </attribute>
+      </widget>
+     </widget>
     </item>
     <item>
      <widget class="QTabWidget" name="tab_manager">
@@ -191,7 +329,7 @@
            <string>Logging</string>
           </property>
           <layout class="QGridLayout" name="gridLayout_3">
-           <item row="0" column="1">
+           <item row="1" column="1">
             <widget class="QListView" name="view_logging"/>
            </item>
           </layout>
@@ -241,7 +379,7 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>1075</width>
+     <width>1095</width>
      <height>22</height>
     </rect>
    </property>

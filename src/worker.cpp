@@ -51,7 +51,7 @@ void Worker::process(){
         }
         //Check serial connection error every loop.
         QSerialPort::SerialPortError e_duringWork = nano_imu_port->error();
-        qDebug() << "checking error...";
+
         if(e_duringWork != 0){
             qDebug() << e_duringWork;
             qDebug() << "Error Occurred during work.";

@@ -24,6 +24,7 @@
 #include <string>
 #include <QThread>
 #include <QStringListModel>
+#include <sensor_msgs/NavSatFix.h>
 
 
 /*****************************************************************************
@@ -62,12 +63,15 @@ public:
 Q_SIGNALS:
 	void loggingUpdated();
     void rosShutdown();
+    void update_gps(const sensor_msgs::NavSatFix);
 
 private:
 	int init_argc;
 	char** init_argv;
 	ros::Publisher chatter_publisher;
+    ros::Subscriber gps_sub;
     QStringListModel logging_model;
+    void gps_callback(const sensor_msgs::NavSatFix &msg);
 };
 
 }  // namespace test_qt

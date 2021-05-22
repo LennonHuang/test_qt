@@ -17,6 +17,7 @@ qrviz::qrviz(QVBoxLayout *layout)
     _manger->startUpdate();
 }
 
+
 //Display the RVIZ Grid
 void qrviz::display_grid(bool enable, QColor color, int cell_num, double cell_size){
     if (_grid != nullptr){
@@ -30,6 +31,37 @@ void qrviz::display_grid(bool enable, QColor color, int cell_num, double cell_si
     ROS_ASSERT(_grid != NULL);
 }
 
+//Display tf
+void qrviz::display_tf(bool enable){
+    if (_tf_display != nullptr){
+        delete _tf_display;
+        _tf_display = nullptr;
+    }
+    _tf_display = _manger->createDisplay("rviz/TF","my_tf",enable);
+    //TODO:tf property
+}
+
+//Display GPS
+void qrviz::display_gps(bool enable){
+    //Check both the map and frame display
+    if (_gps_map_display != nullptr){
+        delete _gps_map_display;
+        _gps_map_display = nullptr;
+    }
+    if (_gps_frame_display != nullptr){
+        delete _gps_frame_display;
+        _gps_frame_display = nullptr;
+    }
+    //Map display in rviz
+    _gps_map_display = _manger->createDisplay("rviz_plugins/AerialMapDisplay","my_map_view",enable);
+    _gps_map_display->subProp("Topic")->setValue("/fix");
+    _gps_map_display->subProp("Object URI")->setValue("https://tile.openstreetmap.org/{z}/{x}/{y}.png");
+    //GPS frame display in rviz
+    _gps_frame_display = _manger->createDisplay("rviz/Axes","gps_frame",enable);
+    _gps_frame_display->subProp("Reference Frame")->setValue("gps");
+    _gps_frame_display->subProp("Length")->setValue(50);
+    _gps_frame_display->subProp("Radius")->setValue(1);
+}
 
 //Display the RVIZ laser point cloud
 void qrviz::display_scan(bool enable,QString topic_name, double point_size){
