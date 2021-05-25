@@ -21,6 +21,12 @@
 #include "gps_worker.hpp"
 #include "qrviz.hpp"
 #include <QtSerialPort/QSerialPort>
+#include <QCamera>
+#include <QMediaRecorder>
+#include <QCameraInfo>
+#include <QCameraViewfinder>
+#include <QCameraImageCapture>
+#include <QUrl>
 
 /*****************************************************************************
 ** Namespace
@@ -75,6 +81,12 @@ public Q_SLOTS:
     //GPS Process
     void window_gps_status(QString status);
     void slot_table_display_gps(const sensor_msgs::NavSatFix);
+    //Camera
+    void on_camera_scan_btn_clicked();
+    void on_camera_connect_btn_clicked();
+    void on_capture_btn_clicked();
+    void on_record_btn_clicked();
+    void update_video_time(qint64 t);
 
     //RVIZ
     void slot_fixed_frame_changed(QString);
@@ -87,7 +99,8 @@ public Q_SLOTS:
     /******************************************
     ** Manual connections
     *******************************************/
-    void updateLoggingView(); // no idea why this can't connect automatically
+    void updateLoggingView();
+
 
 private:
 	Ui::MainWindowDesign ui;
@@ -112,6 +125,15 @@ private:
     QDoubleSpinBox *grid_cell_size_box;
     QComboBox *camera_topic_name_box;
     QDoubleSpinBox *laser_point_size_box;
+
+    //QCamera
+    QCamera *camera;
+    QCameraViewfinder *viewfinder;
+    bool is_camera_connected = false;
+    bool is_video_recording = false;
+    void connectCamera();
+    QCameraImageCapture *imageCapture;
+    QMediaRecorder *recorder;
 };
 
 }  // namespace test_qt

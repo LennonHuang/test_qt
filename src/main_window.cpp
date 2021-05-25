@@ -16,6 +16,7 @@
 #include <QtSerialPort/QSerialPort>
 #include <QtSerialPort/QSerialPortInfo>
 #include <QDebug>
+#include <QFileDialog>
 /*****************************************************************************
 ** Namespaces
 *****************************************************************************/
@@ -486,6 +487,87 @@ void MainWindow::slot_table_display_gps(const sensor_msgs::NavSatFix msg){
     ui.label_longitude_num->setNum(msg.longitude);
     //qDebug("Heard From GPS");
 
+}
+
+void MainWindow::on_camera_scan_btn_clicked(){
+    qDebug() << "Number of camera found: " << QCameraInfo::availableCameras().count();
+    QList<QCameraInfo> cameras = QCameraInfo::availableCameras();
+    foreach (const QCameraInfo &cameraInfo, cameras){
+        qDebug() << "Camera Info: " << cameraInfo.deviceName() << cameraInfo.description() << cameraInfo.position();
+        ui.camera_selection_box->addItem(cameraInfo.description());
+    }
+}
+
+void MainWindow::on_camera_connect_btn_clicked(){
+    if(!is_camera_connected){
+        //Connect the camera
+        connectCamera();
+    }else{
+        camera->stop();
+        viewfinder->deleteLater();
+        ui.camera_connect_btn->setText("Connect");
+        is_camera_connected = false;
+    }
+
+}
+
+void MainWindow::connectCamera(){
+    QList<QCameraInfo> cameras = QCameraInfo::availableCameras();
+    foreach (const QCameraInfo &cameraInfo, cameras){
+        if(cameraInfo.description() == ui.camera_selection_box->currentText()){
+            camera = new QCamera(cameraInfo);
+            viewfinder = new QCameraViewfinder(this);
+
+            camera->setViewfinder(viewfinder);
+            ui.cam_layout->addWidget(viewfinder);
+            //
+            //TODO: Camera Connection Error Check
+            //
+
+            is_camera_connected = true;
+            ui.camera_connect_btn->setText("Disconnect");
+
+            camera->start();
+        }
+    }
+}
+
+void MainWindow::on_capture_btn_clicked(){
+    if(is_camera_connected){
+        imageCapture = new QCameraImageCapture(camera);
+        camera->setCaptureMode(QCamera::CaptureStillImage);
+        camera->searchAndLock();//Lock settings
+        QString path = QFileDialog::getExistingDirectoryUrl().path();
+        qDebug() << path;
+        imageCapture->capture(path);
+        camera->unlock();
+    }
+}
+
+void MainWindow::on_record_btn_clicked(){
+    if(is_camera_connected){
+        if(!is_video_recording){
+            recorder = new QMediaRecorder(camera);
+            camera->setCaptureMode(QCamera::CaptureVideo);
+            connect(recorder,SIGNAL(durationChanged(qint64)),this,SLOT(update_video_time(qint64)));
+            QString path = QFileDialog::getExistingDirectoryUrl().path();
+            recorder->setOutputLocation(path);
+            recorder->record();
+            is_video_recording = true;
+            ui.record_btn->setText("Stop Record");
+
+        }else{
+            recorder->stop();
+            recorder->deleteLater();
+            is_video_recording = false;
+            ui.record_btn->setText("Start Record");
+        }
+    }
+}
+
+void MainWindow::update_video_time(qint64 t){
+    QString time_str = QString::number((t-t%100)/1000.0);
+    ui.record_time_label->setText("Recorded: " + time_str + "s");
 }
 
 }  // namespace test_qt

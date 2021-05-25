@@ -41,7 +41,7 @@ void GPS_Worker::process(){
 
     //Break the loop, if any disconnection or error.
     //
-    _gps_process->close();;
+    _gps_process->close();
     qDebug() << "GPS Worker has finished work.";
     emit finished();
 }
