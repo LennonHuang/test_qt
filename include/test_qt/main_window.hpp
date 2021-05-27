@@ -55,6 +55,7 @@ public:
 
 	void ReadSettings(); // Load up qt program settings at startup
 	void WriteSettings(); // Save qt program settings when closing
+    void scan_ip();
 
 	void closeEvent(QCloseEvent *event); // Overloaded function
 	void showNoMasterMessage();
@@ -93,13 +94,23 @@ public Q_SLOTS:
     void on_capture_btn_clicked();
     void on_record_btn_clicked();
     void update_video_time(qint64 t);
+    //IP Camera
+    void on_scan_camera_ip_btn_clicked();
+    void on_connect_ip_camera_btn_clicked();
+    void on_disconnect_ip_camera_btn_clicked();
+    void on_camera_checkBox_stateChanged(int state);
+    //void on_connect_ip_camera_btn_2_clicked();
+    //void on_disconnect_ip_camera_btn_2_clicked();
     //Video Player
     void on_load_video_btn_clicked();
+    //IP Scan
+    void update_ip();
     //Lidar
     void on_scan_laser_btn_clicked();
-    void update_available_ip(QStringList);
     void on_connect_laser_btn_clicked();
     void on_disconnect_laser_btn_clicked();
+    void output_sick_process();
+    void output_sick_process_error();
 
     //RVIZ
     void slot_fixed_frame_changed(QString);
@@ -123,8 +134,9 @@ private:
 	QNode qnode;
     Worker *nano_worker;//Serial Worker in non-GUI thread
     GPS_Worker *gps_worker;//GPS Worker in non-GUI thread
-    ip_worker *ip_scanner;//ip scaner
-    laser_worker *sick_worker;//SICK laser
+    QProcess *ip_scan_process=nullptr;
+    QProcess *ip_camera_process=nullptr;
+    QProcess *sick_lidar_process=nullptr;//SICK Laser
     qrviz *my_rviz;
 
     //RVIZ ui Elements

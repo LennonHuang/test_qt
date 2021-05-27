@@ -578,48 +578,129 @@ void MainWindow::on_load_video_btn_clicked(){
     //player 
 }
 
-void MainWindow::on_scan_laser_btn_clicked(){
-    ui.scan_ip_label->setText("Scanning available IP...");
-    QThread *ip_scan_thread = new QThread();
-    ip_scanner = new ip_worker();
-    ip_scanner->moveToThread(ip_scan_thread);
-    //Connect the worker and thread//
-    connect( ip_scan_thread, &QThread::started, ip_scanner, &ip_worker::process);
-    connect( ip_scanner, &ip_worker::finished, ip_scan_thread, &QThread::quit);
-    connect( ip_scanner, &ip_worker::finished, ip_scanner, &ip_worker::deleteLater);
-    connect( ip_scan_thread, &QThread::finished, ip_scan_thread, &QThread::deleteLater);
-    connect( ip_scanner, SIGNAL(finished(QStringList)), this, SLOT(update_available_ip(QStringList)));
-
-    ip_scan_thread->start();
-
+////////////////////////
+/// IP Camera
+///
+void MainWindow::on_scan_camera_ip_btn_clicked(){
+    ui.scan_ip_label_2->setText("Scanning available IP...");
+    scan_ip();
 }
 
-void MainWindow::update_available_ip(QStringList ip_list){
-    ui.scan_ip_label->setText("IP Scan Done");
-    ui.ip_address_comboBox->clear();
-    ui.ip_address_comboBox->addItems(ip_list);
+void MainWindow::on_connect_ip_camera_btn_clicked(){
+    ui.scan_ip_label_2->setText("Launching camera");
+    if(ip_camera_process == nullptr){
+        ip_camera_process = new QProcess();
+    }else{
+        ip_camera_process->close();
+        delete ip_camera_process;
+        ip_camera_process = new QProcess();
+    }
+    ip_camera_process->start("bash");
+    ip_camera_process->write("rosrun axis_camera axis.py __name:=axis_M3408-P _hostname:="+
+                             ui.ip_address_comboBox_camera->currentText().toUtf8() +"\n");
+    //connect(ip_camera_process,SIGNAL(readyReadStandardError()),this,SLOT(output_sick_process_error()));
+    //connect(ip_camera_process,&QProcess::readyReadStandardOutput,this,&MainWindow::);
+    ui.scan_ip_label_2->setText("Camera Launched");
+    ip_camera_process->write("exit\n");
+}
 
+void MainWindow::on_disconnect_ip_camera_btn_clicked(){
+    ip_camera_process->close();
+    ip_camera_process->start("bash");
+    ip_camera_process->write("rosnode kill /axis_M3408-P \n");
+}
+
+void MainWindow::on_camera_checkBox_stateChanged(int state){
+    bool enable;
+    enable = state>1?true:false;
+    my_rviz->display_ip_camera(enable);
+    qDebug() << state;
+}
+//IP Camera
+//////////////////
+
+/////////////////////////////
+////IP Update parsing xml file
+void MainWindow::scan_ip(){
+    if(ip_scan_process == nullptr){
+     ip_scan_process = new QProcess();
+    }
+    ip_scan_process->start("bash");
+    ip_scan_process->write("nmap 192.168.0.1/24 -oX ip_file.xml \n");
+    ip_scan_process->write("exit\n");//Finish QProcess
+    connect(ip_scan_process,SIGNAL(finished(int,QProcess::ExitStatus)),this,SLOT(update_ip()));
+}
+
+void MainWindow::update_ip(){
+    ui.laser_output_text->appendHtml("<p style=\"color:blue\">" + ip_scan_process->readAllStandardOutput() +"</p>");
+
+    //Parse XML
+    QFile *xmlFile = new QFile("ip_file.xml");
+    if(!xmlFile->open(QIODevice::ReadOnly | QIODevice::Text)){
+        qDebug() << "cannot open it";
+    }else{
+        qDebug() << "The file is open";
+    }
+
+    QXmlStreamReader *xml_reader = new QXmlStreamReader(xmlFile);
+    QStringList scan_result;
+    while(!xml_reader->atEnd() && !xml_reader->hasError()){
+        if(xml_reader->readNext() == QXmlStreamReader::StartElement && xml_reader->name() == "address"){
+            qDebug() << xml_reader->attributes().value("addr");
+            scan_result.append(xml_reader->attributes().value("addr").toString());
+        }
+    }
+    //Display Done on Scan label
+    ui.scan_ip_label->setText("IP Scan Done");
+    ui.scan_ip_label_2->setText("IP Scan Done");
+    //Update All ip address comboBox
+    ui.ip_address_comboBox->clear();
+    ui.ip_address_comboBox->addItems(scan_result);
+    ui.ip_address_comboBox_camera->clear();
+    ui.ip_address_comboBox_camera->addItems(scan_result);
+    ui.ip_address_comboBox_camera_2->clear();
+    ui.ip_address_comboBox_camera_2->addItems(scan_result);
+}
+
+///////////////
+////SICK LASER
+void MainWindow::on_scan_laser_btn_clicked(){
+    ui.scan_ip_label->setText("Scanning available IP...");
+    scan_ip();
 }
 
 void MainWindow::on_connect_laser_btn_clicked(){
     ui.scan_ip_label->setText("Launching laser...");
-    QThread *sick_thread = new QThread();
-    sick_worker = new laser_worker(ui.ip_address_comboBox->currentText());
-    sick_worker->moveToThread(sick_thread);
-    //Connect the worker and thread//
-    connect( sick_thread, &QThread::started, sick_worker, &laser_worker::process);
-    connect( sick_worker, &laser_worker::finished, sick_thread, &QThread::quit);
-    connect( sick_worker, &laser_worker::finished, sick_thread, &laser_worker::deleteLater);
-    connect( sick_thread, &QThread::finished, sick_thread, &QThread::deleteLater);
-    //connect( sick_worker, SIGNAL(finished(QStringList)), this, SLOT(update_available_ip(QStringList)));
-
-    sick_thread->start();
+    if(sick_lidar_process == nullptr){
+        sick_lidar_process = new QProcess();
+    }else{
+        sick_lidar_process->close();
+        delete sick_lidar_process;
+        sick_lidar_process = new QProcess();
+    }
+    sick_lidar_process->start("bash");
+    sick_lidar_process->write("rosrun sick_tim sick_tim551_2050001 __name:=sick_TM571 _hostname:=" + ui.ip_address_comboBox->currentText().toUtf8() + " \n");
+    connect(sick_lidar_process,SIGNAL(readyReadStandardError()),this,SLOT(output_sick_process_error()));
+    connect(sick_lidar_process,&QProcess::readyReadStandardOutput,this,&MainWindow::output_sick_process);
     ui.scan_ip_label->setText("laser Launched");
+    sick_lidar_process->write("exit\n");
 }
 
 void MainWindow::on_disconnect_laser_btn_clicked(){
-    sick_worker->is_processing = false;
+    sick_lidar_process->close();
+    sick_lidar_process->start("bash");
+    sick_lidar_process->write("rosnode kill /sick_TM571 \n");
 }
 
+void MainWindow::output_sick_process(){
+    //ui.laser_output_text->append(sick_lidar_process->readAllStandardOutput());
+    ui.laser_output_text->appendHtml("<p style=\"color:blue\">" + sick_lidar_process->readAllStandardOutput() +"</p>");
+}
+
+void MainWindow::output_sick_process_error(){
+    ui.laser_output_text->appendHtml("<p style=\"color:red\">" + sick_lidar_process->readAllStandardError() +"</p>");
+}
+////SICK LASER
+//////////////
 }  // namespace test_qt
 

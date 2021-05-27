@@ -20,6 +20,7 @@ public:
     void display_camera(bool enable, QString topic_name);
     void display_tf(bool enable);
     void display_gps(bool enable);
+    void display_ip_camera(bool enable);
     rviz::VisualizationManager *_manger;
 
 private:
@@ -30,6 +31,7 @@ private:
     rviz::Display *_tf_display = nullptr;
     rviz::Display *_gps_frame_display = nullptr;
     rviz::Display *_gps_map_display = nullptr;
+    rviz::Display *_ip_camera_display = nullptr;
 
 };
 
