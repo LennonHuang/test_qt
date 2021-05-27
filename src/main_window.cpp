@@ -17,6 +17,8 @@
 #include <QtSerialPort/QSerialPortInfo>
 #include <QDebug>
 #include <QFileDialog>
+
+
 /*****************************************************************************
 ** Namespaces
 *****************************************************************************/
@@ -568,6 +570,55 @@ void MainWindow::on_record_btn_clicked(){
 void MainWindow::update_video_time(qint64 t){
     QString time_str = QString::number((t-t%100)/1000.0);
     ui.record_time_label->setText("Recorded: " + time_str + "s");
+}
+
+void MainWindow::on_load_video_btn_clicked(){
+    QString fileName = QFileDialog::getOpenFileName(this,"Select Video",qApp->applicationDirPath());
+    //qDebug() << fileName;
+    //player 
+}
+
+void MainWindow::on_scan_laser_btn_clicked(){
+    ui.scan_ip_label->setText("Scanning available IP...");
+    QThread *ip_scan_thread = new QThread();
+    ip_scanner = new ip_worker();
+    ip_scanner->moveToThread(ip_scan_thread);
+    //Connect the worker and thread//
+    connect( ip_scan_thread, &QThread::started, ip_scanner, &ip_worker::process);
+    connect( ip_scanner, &ip_worker::finished, ip_scan_thread, &QThread::quit);
+    connect( ip_scanner, &ip_worker::finished, ip_scanner, &ip_worker::deleteLater);
+    connect( ip_scan_thread, &QThread::finished, ip_scan_thread, &QThread::deleteLater);
+    connect( ip_scanner, SIGNAL(finished(QStringList)), this, SLOT(update_available_ip(QStringList)));
+
+    ip_scan_thread->start();
+
+}
+
+void MainWindow::update_available_ip(QStringList ip_list){
+    ui.scan_ip_label->setText("IP Scan Done");
+    ui.ip_address_comboBox->clear();
+    ui.ip_address_comboBox->addItems(ip_list);
+
+}
+
+void MainWindow::on_connect_laser_btn_clicked(){
+    ui.scan_ip_label->setText("Launching laser...");
+    QThread *sick_thread = new QThread();
+    sick_worker = new laser_worker(ui.ip_address_comboBox->currentText());
+    sick_worker->moveToThread(sick_thread);
+    //Connect the worker and thread//
+    connect( sick_thread, &QThread::started, sick_worker, &laser_worker::process);
+    connect( sick_worker, &laser_worker::finished, sick_thread, &QThread::quit);
+    connect( sick_worker, &laser_worker::finished, sick_thread, &laser_worker::deleteLater);
+    connect( sick_thread, &QThread::finished, sick_thread, &QThread::deleteLater);
+    //connect( sick_worker, SIGNAL(finished(QStringList)), this, SLOT(update_available_ip(QStringList)));
+
+    sick_thread->start();
+    ui.scan_ip_label->setText("laser Launched");
+}
+
+void MainWindow::on_disconnect_laser_btn_clicked(){
+    sick_worker->is_processing = false;
 }
 
 }  // namespace test_qt

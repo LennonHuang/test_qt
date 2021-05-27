@@ -20,6 +20,8 @@
 #include "worker.hpp"
 #include "gps_worker.hpp"
 #include "qrviz.hpp"
+#include "ip_worker.hpp"
+#include "laser_worker.hpp"
 #include <QtSerialPort/QSerialPort>
 #include <QCamera>
 #include <QMediaRecorder>
@@ -27,6 +29,10 @@
 #include <QCameraViewfinder>
 #include <QCameraImageCapture>
 #include <QUrl>
+#include <QMediaPlayer>
+#include <QVideoWidget>
+#include <QNetworkInterface>
+#include <QProcess>
 
 /*****************************************************************************
 ** Namespace
@@ -87,6 +93,13 @@ public Q_SLOTS:
     void on_capture_btn_clicked();
     void on_record_btn_clicked();
     void update_video_time(qint64 t);
+    //Video Player
+    void on_load_video_btn_clicked();
+    //Lidar
+    void on_scan_laser_btn_clicked();
+    void update_available_ip(QStringList);
+    void on_connect_laser_btn_clicked();
+    void on_disconnect_laser_btn_clicked();
 
     //RVIZ
     void slot_fixed_frame_changed(QString);
@@ -107,10 +120,11 @@ private:
     bool plugin_on = false;//A flag to avoid re-create a new bash (plugin)
     bool gps_on = false;
     QProcess *plg = nullptr;
-    //QProcess *gps_process = nullptr;
 	QNode qnode;
-    Worker *nano_worker;
-    GPS_Worker *gps_worker;
+    Worker *nano_worker;//Serial Worker in non-GUI thread
+    GPS_Worker *gps_worker;//GPS Worker in non-GUI thread
+    ip_worker *ip_scanner;//ip scaner
+    laser_worker *sick_worker;//SICK laser
     qrviz *my_rviz;
 
     //RVIZ ui Elements
@@ -134,6 +148,7 @@ private:
     void connectCamera();
     QCameraImageCapture *imageCapture;
     QMediaRecorder *recorder;
+    QMediaPlayer *player;
 };
 
 }  // namespace test_qt
