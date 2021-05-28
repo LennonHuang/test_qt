@@ -55,7 +55,9 @@ MainWindow::MainWindow(int argc, char** argv, QWidget *parent)
     if ( ui.checkbox_remember_settings->isChecked() ) {
         on_button_connect_clicked(true);
     }
-
+    //Init User Interface
+    ui.disconnect_ip_camera_btn->setEnabled(false);
+    ui.disconnect_ip_camera_btn_2->setEnabled(false);
 
     //Init All RVIZ Elements
     //init the tree widget
@@ -438,37 +440,49 @@ void MainWindow::on_plugin_test_btn_clicked(){
 
 }
 
+///////////////////////////
+////GPS
+///
 void MainWindow::on_gps_connect_btn_clicked(){
-    QThread *gps_thread = new QThread();
-    gps_worker = new GPS_Worker(ui.serial_gps_serial_ComboBox->currentText(),"9600");
-    gps_worker->moveToThread(gps_thread);
-    //Connect the worker and thread//
-    connect( gps_thread, &QThread::started, gps_worker, &GPS_Worker::process);
-    connect( gps_worker, &GPS_Worker::finished, gps_thread, &QThread::quit);
-    connect( gps_worker, &GPS_Worker::finished, gps_worker, &GPS_Worker::deleteLater);
-    connect( gps_thread, &QThread::finished, gps_thread, &QThread::deleteLater);
-    //Connect worker signal with Main GUI
-    connect(gps_worker, SIGNAL(success_launch(QString)), this, SLOT(window_gps_status(QString)));
-    connect(gps_worker, SIGNAL(error(QString)), this, SLOT(window_gps_status(QString)));
-
-    gps_thread->start();
+    ui.gps_status_label->setText("Launching GPS");
+    if(gps_process == nullptr){
+        gps_process = new QProcess();
+    }else{
+        gps_process->close();
+        delete gps_process;
+        gps_process = new QProcess();
+    }
+    gps_process->start("bash");
+    gps_process->write("rosrun nmea_navsat_driver nmea_serial_driver ");
+    connect(gps_process, SIGNAL(started()),this,SLOT(gps_launch_finished()));
+    gps_process->write("_port:=/dev/" + ui.serial_gps_serial_ComboBox->currentText().toUtf8());
+    gps_process->write(" _baud:=9600 \n");
+    connect(gps_process,SIGNAL(readyReadStandardError()),this,SLOT(output_gps_process_error()));
+    connect(gps_process,&QProcess::readyReadStandardOutput,this,&MainWindow::output_gps_process_standard);
     ui.gps_connect_btn->setEnabled(false);
-    ui.gps_status_label->setText("Trying to connect to GPS...");
+    ui.gps_status_label->setText("GPS Launched");
 }
 
+void MainWindow::output_gps_process_error(){
+    QString error = QString(gps_process->readAllStandardError());
+    if (error.mid(0,6) != "[WARN]"){
+        ui.gps_output_text->appendHtml("<p style=\"color:red\">" + error +"</p>");
+        on_gps_disconnect_btn_clicked();
+    }else{
+        ui.gps_output_text->appendHtml("<p style=\"color:red\">" + error +"</p>");
+    }
+}
+
+void MainWindow::output_gps_process_standard(){
+    ui.gps_output_text->appendHtml("<p style=\"color:blue\">" + gps_process->readAllStandardOutput() +"</p>");
+}
+
+
 void MainWindow::on_gps_disconnect_btn_clicked(){
-    //Break the loop inside GPS_Worker process()
-    gps_worker->is_processing = false;
-    ui.gps_connect_btn->setEnabled(true);
-    ui.gps_disconnect_btn->setEnabled(false);
-    QProcess *node_killer = new QProcess();
-    node_killer->start("bash");
-    node_killer->write("rosnode kill /nmea_serial_driver \n");
-    ui.gps_status_label->setText("Disconnecting GPS");
-    node_killer->waitForReadyRead(2000);
-    qDebug() << node_killer->readAllStandardOutput();
-    node_killer->close();
+    gps_process->write("rosnode kill /nmea_serial_driver \n");
+    gps_process->close();
     ui.gps_status_label->setText("GPS disconnected");
+    ui.gps_connect_btn->setEnabled(true);
 }
 
 void MainWindow::window_gps_status(QString status){
@@ -487,9 +501,9 @@ void MainWindow::slot_table_display_gps(const sensor_msgs::NavSatFix msg){
     ui.label_altitude_num->setNum(msg.altitude);
     ui.label_latitude_num->setNum(msg.latitude);
     ui.label_longitude_num->setNum(msg.longitude);
-    //qDebug("Heard From GPS");
-
 }
+////GPS
+///////////////////////////////////////////
 
 void MainWindow::on_camera_scan_btn_clicked(){
     qDebug() << "Number of camera found: " << QCameraInfo::availableCameras().count();
@@ -588,6 +602,7 @@ void MainWindow::on_scan_camera_ip_btn_clicked(){
 
 void MainWindow::on_connect_ip_camera_btn_clicked(){
     ui.scan_ip_label_2->setText("Launching camera");
+    ui.connect_ip_camera_btn->setEnabled(false);
     if(ip_camera_process == nullptr){
         ip_camera_process = new QProcess();
     }else{
@@ -602,12 +617,14 @@ void MainWindow::on_connect_ip_camera_btn_clicked(){
     //connect(ip_camera_process,&QProcess::readyReadStandardOutput,this,&MainWindow::);
     ui.scan_ip_label_2->setText("Camera Launched");
     ip_camera_process->write("exit\n");
+    ui.disconnect_ip_camera_btn->setEnabled(true);
 }
 
 void MainWindow::on_disconnect_ip_camera_btn_clicked(){
     ip_camera_process->close();
     ip_camera_process->start("bash");
     ip_camera_process->write("rosnode kill /axis_M3408-P \n");
+    ui.connect_ip_camera_btn->setEnabled(true);
 }
 
 void MainWindow::on_camera_checkBox_stateChanged(int state){
@@ -618,6 +635,7 @@ void MainWindow::on_camera_checkBox_stateChanged(int state){
 
 void MainWindow::on_connect_ip_camera_btn_2_clicked(){
     ui.scan_ip_label_2->setText("Launching camera");
+    ui.connect_ip_camera_btn_2->setEnabled(false);
     if(ip_camera_process_2 == nullptr){
         ip_camera_process_2 = new QProcess();
     }else{
@@ -632,12 +650,14 @@ void MainWindow::on_connect_ip_camera_btn_2_clicked(){
     //connect(ip_camera_process,&QProcess::readyReadStandardOutput,this,&MainWindow::);
     ui.scan_ip_label_2->setText("Camera Launched");
     ip_camera_process_2->write("exit\n");
+    ui.disconnect_ip_camera_btn_2->setEnabled(true);
 }
 
 void MainWindow::on_disconnect_ip_camera_btn_2_clicked(){
     ip_camera_process_2->close();
     ip_camera_process_2->start("bash");
     ip_camera_process_2->write("rosnode kill /axis_214 \n");
+    ui.connect_ip_camera_btn_2->setEnabled(true);
 }
 
 void MainWindow::on_camera_checkBox_2_stateChanged(int state){

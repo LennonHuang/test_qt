@@ -88,6 +88,8 @@ public Q_SLOTS:
     //GPS Process
     void window_gps_status(QString status);
     void slot_table_display_gps(const sensor_msgs::NavSatFix);
+    void output_gps_process_error();
+    void output_gps_process_standard();
     //Camera
     void on_camera_scan_btn_clicked();
     void on_camera_connect_btn_clicked();
@@ -134,7 +136,7 @@ private:
     QProcess *plg = nullptr;
 	QNode qnode;
     Worker *nano_worker;//Serial Worker in non-GUI thread
-    GPS_Worker *gps_worker;//GPS Worker in non-GUI thread
+    QProcess *gps_process = nullptr;
     QProcess *ip_scan_process=nullptr;
     QProcess *ip_camera_process=nullptr;
     QProcess *ip_camera_process_2 = nullptr;
