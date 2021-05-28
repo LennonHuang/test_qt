@@ -21,6 +21,7 @@ public:
     void display_tf(bool enable);
     void display_gps(bool enable);
     void display_ip_camera(bool enable);
+    void display_ip_camera_2(bool enable);
     rviz::VisualizationManager *_manger;
 
 private:
@@ -32,6 +33,7 @@ private:
     rviz::Display *_gps_frame_display = nullptr;
     rviz::Display *_gps_map_display = nullptr;
     rviz::Display *_ip_camera_display = nullptr;
+    rviz::Display *_ip_camera_2_display = nullptr;
 
 };
 

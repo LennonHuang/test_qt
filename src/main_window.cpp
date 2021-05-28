@@ -614,7 +614,36 @@ void MainWindow::on_camera_checkBox_stateChanged(int state){
     bool enable;
     enable = state>1?true:false;
     my_rviz->display_ip_camera(enable);
-    qDebug() << state;
+}
+
+void MainWindow::on_connect_ip_camera_btn_2_clicked(){
+    ui.scan_ip_label_2->setText("Launching camera");
+    if(ip_camera_process_2 == nullptr){
+        ip_camera_process_2 = new QProcess();
+    }else{
+        ip_camera_process_2->close();
+        delete ip_camera_process_2;
+        ip_camera_process_2 = new QProcess();
+    }
+    ip_camera_process_2->start("bash");
+    ip_camera_process_2->write("rosrun axis_camera axis.py __name:=axis_214 _hostname:="+
+                             ui.ip_address_comboBox_camera_2->currentText().toUtf8() + "/image_raw/compressed:=/image_214" +"\n");
+    //connect(ip_camera_process,SIGNAL(readyReadStandardError()),this,SLOT(output_sick_process_error()));
+    //connect(ip_camera_process,&QProcess::readyReadStandardOutput,this,&MainWindow::);
+    ui.scan_ip_label_2->setText("Camera Launched");
+    ip_camera_process_2->write("exit\n");
+}
+
+void MainWindow::on_disconnect_ip_camera_btn_2_clicked(){
+    ip_camera_process_2->close();
+    ip_camera_process_2->start("bash");
+    ip_camera_process_2->write("rosnode kill /axis_214 \n");
+}
+
+void MainWindow::on_camera_checkBox_2_stateChanged(int state){
+    bool enable;
+    enable = state>1?true:false;
+    my_rviz->display_ip_camera_2(enable);
 }
 //IP Camera
 //////////////////

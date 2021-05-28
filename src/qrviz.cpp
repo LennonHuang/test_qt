@@ -99,3 +99,16 @@ void qrviz::display_ip_camera(bool enable){
     _ip_camera_display->subProp("Transport Hint")->setValue("compressed");
     ROS_ASSERT(_ip_camera_display != NULL);
 }
+
+//Display IP camera 2 (rviz image)
+void qrviz::display_ip_camera_2(bool enable){
+    if(_ip_camera_2_display != nullptr){
+        delete _ip_camera_2_display;
+        _ip_camera_2_display = nullptr;
+    }
+
+    _ip_camera_2_display = _manger->createDisplay("rviz/Image","my_ip_camera_2",enable);
+    _ip_camera_2_display->subProp("Image Topic")->setValue("/image_214");
+    _ip_camera_2_display->subProp("Transport Hint")->setValue("compressed");
+    ROS_ASSERT(_ip_camera_2_display != NULL);
+}

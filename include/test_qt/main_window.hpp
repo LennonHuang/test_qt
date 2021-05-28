@@ -99,8 +99,9 @@ public Q_SLOTS:
     void on_connect_ip_camera_btn_clicked();
     void on_disconnect_ip_camera_btn_clicked();
     void on_camera_checkBox_stateChanged(int state);
-    //void on_connect_ip_camera_btn_2_clicked();
-    //void on_disconnect_ip_camera_btn_2_clicked();
+    void on_camera_checkBox_2_stateChanged(int state);
+    void on_connect_ip_camera_btn_2_clicked();
+    void on_disconnect_ip_camera_btn_2_clicked();
     //Video Player
     void on_load_video_btn_clicked();
     //IP Scan
@@ -136,6 +137,7 @@ private:
     GPS_Worker *gps_worker;//GPS Worker in non-GUI thread
     QProcess *ip_scan_process=nullptr;
     QProcess *ip_camera_process=nullptr;
+    QProcess *ip_camera_process_2 = nullptr;
     QProcess *sick_lidar_process=nullptr;//SICK Laser
     qrviz *my_rviz;
 
