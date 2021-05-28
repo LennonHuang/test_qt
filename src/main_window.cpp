@@ -627,7 +627,7 @@ void MainWindow::on_connect_ip_camera_btn_2_clicked(){
     }
     ip_camera_process_2->start("bash");
     ip_camera_process_2->write("rosrun axis_camera axis.py __name:=axis_214 _hostname:="+
-                             ui.ip_address_comboBox_camera_2->currentText().toUtf8() + "/image_raw/compressed:=/image_214" +"\n");
+                             ui.ip_address_comboBox_camera_2->currentText().toUtf8() + " /image_raw/compressed:=/image_214/compressed" +"\n");
     //connect(ip_camera_process,SIGNAL(readyReadStandardError()),this,SLOT(output_sick_process_error()));
     //connect(ip_camera_process,&QProcess::readyReadStandardOutput,this,&MainWindow::);
     ui.scan_ip_label_2->setText("Camera Launched");
