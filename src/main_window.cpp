@@ -222,11 +222,6 @@ void MainWindow::on_button_connect_clicked(bool check ) {
             my_rviz->_manger->setFixedFrame(fixed_frame_box->currentText());
             slot_mainwindow_display_grid(true);
             slot_mainwindow_display_scan(true);
-////            ///////test window
-//            QDialog *test_dialog = new QDialog();
-//            test_ui->setupUi(test_dialog);
-//            test_dialog->show();
-////            //connect(test_ui->buttonBox, SIGNAL(accepted()),this, SLOT(on_quit_button_clicked()));
 		}
 	} else {
 		if ( ! qnode.init(ui.line_edit_master->text().toStdString(),
@@ -758,8 +753,8 @@ void MainWindow::output_sick_process_error(){
 //////////////
 }  // namespace test_qt
 
-
-void test_qt::MainWindow::on_test_btn_clicked()
-{
-    qDebug() << "ok";
+void test_qt::MainWindow::okei(){
+    qDebug() << "okei";
 }
+
+

@@ -129,13 +129,11 @@ public Q_SLOTS:
     *******************************************/
     void updateLoggingView();
 
+    void okei();
 
-private slots:
-    void on_test_btn_clicked();
 
 private:
     Ui::MainWindowDesign ui;//header file built from .ui file
-    Ui::TestWindow *test_ui = new Ui::TestWindow();//test .ui output header
     bool plugin_on = false;//A flag to avoid re-create a new bash (plugin)
     bool gps_on = false;
     QProcess *plg = nullptr;
