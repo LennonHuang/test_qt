@@ -23,8 +23,9 @@ int main(int argc, char **argv) {
     ** Qt
     **********************/
     QApplication app(argc, argv);
-    test_qt::MainWindow w(argc,argv);
-    w.show();
+    test_qt::MainWindow main_window(argc,argv);
+
+    main_window.show();
     app.connect(&app, SIGNAL(lastWindowClosed()), &app, SLOT(quit()));
     int result = app.exec();
 

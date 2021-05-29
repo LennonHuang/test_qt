@@ -16,6 +16,7 @@
 #include <QtGui>
 #include <QSpinBox>
 #include "ui_main_window.h"
+#include "ui_test_window.h"
 #include "qnode.hpp"
 #include "worker.hpp"
 #include "gps_worker.hpp"
@@ -129,8 +130,12 @@ public Q_SLOTS:
     void updateLoggingView();
 
 
+private slots:
+    void on_test_btn_clicked();
+
 private:
-	Ui::MainWindowDesign ui;
+    Ui::MainWindowDesign ui;//header file built from .ui file
+    Ui::TestWindow *test_ui = new Ui::TestWindow();//test .ui output header
     bool plugin_on = false;//A flag to avoid re-create a new bash (plugin)
     bool gps_on = false;
     QProcess *plg = nullptr;

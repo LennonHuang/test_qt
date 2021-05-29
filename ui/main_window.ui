@@ -7,14 +7,14 @@
     <x>0</x>
     <y>0</y>
     <width>1095</width>
-    <height>781</height>
+    <height>787</height>
    </rect>
   </property>
   <property name="windowTitle">
    <string>QRosApp</string>
   </property>
   <property name="windowIcon">
-   <iconset resource="../../qt_demo/resources/images.qrc">
+   <iconset>
     <normaloff>:/images/icon.png</normaloff>:/images/icon.png</iconset>
   </property>
   <property name="locale">
@@ -31,7 +31,7 @@
        </sizepolicy>
       </property>
       <property name="currentIndex">
-       <number>1</number>
+       <number>3</number>
       </property>
       <widget class="QWidget" name="tab_1">
        <attribute name="title">
