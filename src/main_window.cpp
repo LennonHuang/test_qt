@@ -8,7 +8,6 @@
 /*****************************************************************************
 ** Includes
 *****************************************************************************/
-
 #include <QtGui>
 #include <QMessageBox>
 #include <iostream>
@@ -17,15 +16,10 @@
 #include <QtSerialPort/QSerialPortInfo>
 #include <QDebug>
 #include <QFileDialog>
-
-
 /*****************************************************************************
 ** Namespaces
 *****************************************************************************/
-
 namespace test_qt {
-
-using namespace Qt;
 
 /*****************************************************************************
 ** Implementation [MainWindow]
@@ -39,22 +33,26 @@ MainWindow::MainWindow(int argc, char** argv, QWidget *parent)
     QObject::connect(ui.actionAbout_Qt, SIGNAL(triggered(bool)), qApp, SLOT(aboutQt())); // qApp is a global variable for the application
 
     ReadSettings();
-	setWindowIcon(QIcon(":/images/icon.png"));
+    setWindowIcon(QIcon(":/images/icon.png"));//Set the Icon of the window.
     ui.tab_manager->setCurrentIndex(0); // ensure the first tab is showing
-    QObject::connect(&qnode, SIGNAL(rosShutdown()), this, SLOT(close()));
+    //QObject::connect(&qnode, SIGNAL(rosShutdown()), this, SLOT(close()));
 
 	/*********************
 	** Logging
 	**********************/
-	ui.view_logging->setModel(qnode.loggingModel());
+    ui.view_logging->setModel(qnode.loggingModel());//connect the qNode member: QStringListModel with the mainWindow children
     QObject::connect(&qnode, SIGNAL(loggingUpdated()), this, SLOT(updateLoggingView()));
 
     /*********************
     ** Auto Start
     **********************/
     if ( ui.checkbox_remember_settings->isChecked() ) {
-        on_button_connect_clicked(true);
+        on_button_connect_clicked();
     }
+
+    /////////////////////////////////////////
+    //INIT Device Connection and RVIZ setting
+    ///////////////////////////
     //Init User Interface
     ui.disconnect_ip_camera_btn->setEnabled(false);
     ui.disconnect_ip_camera_btn_2->setEnabled(false);
@@ -66,14 +64,14 @@ MainWindow::MainWindow(int argc, char** argv, QWidget *parent)
     QTreeWidgetItem *coordinate = new QTreeWidgetItem(QStringList() << "Frame Name");
     QTreeWidgetItem *fixed_frame = new QTreeWidgetItem(QStringList() << "Fixed Frame");
     fixed_frame_box = new QComboBox();
-    fixed_frame_box->addItems(QStringList() << "gps" <<"odom" << "laser_link" << "map");
+    fixed_frame_box->addItems(QStringList() << "laser" << "gps" <<"odom" << "map");
     fixed_frame_box->setEditable(true);
     ui.rviz_treeWidget->addTopLevelItem(coordinate);
     //Connect the box, the key and value (both of them are QTreeWidgets)
     coordinate->addChild(fixed_frame);
     ui.rviz_treeWidget->setItemWidget(fixed_frame, 1, fixed_frame_box);
     connect(fixed_frame_box,SIGNAL(currentTextChanged(QString)),this,SLOT(slot_fixed_frame_changed(QString)));
-
+    coordinate->setExpanded(true);
 
     //init tf//
     QTreeWidgetItem *tf = new QTreeWidgetItem(QStringList() << "Display All Frame");
@@ -161,7 +159,8 @@ MainWindow::~MainWindow() {}
 /*****************************************************************************
 ** Implementation [Slots]
 *****************************************************************************/
-
+////////////////////////////////
+/// RVIZ display SLOTs
 void MainWindow::slot_mainwindow_display_gps(int state){
     bool enable = state>=1?true:false;
     my_rviz->display_gps(enable);
@@ -195,33 +194,33 @@ void MainWindow::slot_mainwindow_display_grid(int state){
 void MainWindow::slot_fixed_frame_changed(QString qs){
     my_rviz->_manger->setFixedFrame(qs);
 }
+////RVIZ Display SLOTs
+//////////////////////////
 
 void MainWindow::showNoMasterMessage() {
 	QMessageBox msgBox;
 	msgBox.setText("Couldn't find the ros master.");
 	msgBox.exec();
-    close();
+    //close();
 }
 
 /*
- * These triggers whenever the button is clicked, regardless of whether it
- * is already checked or not.
+ * These triggers whenever the button is clicked. Automatic connect Method: "on_${element}_${signal}"
  */
-
-void MainWindow::on_button_connect_clicked(bool check ) {
+//////////////////////////////////
+//Connect to the Master
+void MainWindow::on_button_connect_clicked() {
 	if ( ui.checkbox_use_environment->isChecked() ) {
 		if ( !qnode.init() ) {
 			showNoMasterMessage();
 		} else {
 			ui.button_connect->setEnabled(false);
-            my_rviz = new qrviz(ui.layout_rviz);//Create embedded RVIZ
-            ui.rviz_treeWidget->setEnabled(true);
-            //Display RVIZ
-            grid_checkbox->setChecked(true);
-            scan_check_box->setChecked(true);
-            my_rviz->_manger->setFixedFrame(fixed_frame_box->currentText());
-            slot_mainwindow_display_grid(true);
-            slot_mainwindow_display_scan(true);
+            init_rviz_ui_elements();
+//            //A Test DialogWindow
+//            QDialog *qd_test = new QDialog();
+//            test_ui.setupUi(qd_test);
+//            qd_test->show();
+//            connect(test_ui.test_btn, SIGNAL(clicked()),this, SLOT(okei()));
 		}
 	} else {
 		if ( ! qnode.init(ui.line_edit_master->text().toStdString(),
@@ -231,19 +230,21 @@ void MainWindow::on_button_connect_clicked(bool check ) {
 			ui.button_connect->setEnabled(false);
 			ui.line_edit_master->setReadOnly(true);
 			ui.line_edit_host->setReadOnly(true);
-			ui.line_edit_topic->setReadOnly(true);
-            my_rviz = new qrviz(ui.layout_rviz);//Create embedded RVIZ
-            ui.rviz_treeWidget->setEnabled(true);
-            //Display RVIZ
-            grid_checkbox->setChecked(true);
-            scan_check_box->setChecked(true);
-            my_rviz->_manger->setFixedFrame(fixed_frame_box->currentText());
-            slot_mainwindow_display_grid(true);
-            slot_mainwindow_display_scan(true);
+            init_rviz_ui_elements();
 		}
 	}
 }
 
+void MainWindow::init_rviz_ui_elements(){
+    my_rviz = new qrviz(ui.layout_rviz);//Create embedded RVIZ
+    ui.rviz_treeWidget->setEnabled(true);
+    //Display RVIZ
+    grid_checkbox->setChecked(true);
+    scan_check_box->setChecked(true);
+    my_rviz->_manger->setFixedFrame(fixed_frame_box->currentText());
+    slot_mainwindow_display_grid(true);
+    slot_mainwindow_display_scan(true);
+}
 
 void MainWindow::on_checkbox_use_environment_stateChanged(int state) {
 	bool enabled;
@@ -254,7 +255,6 @@ void MainWindow::on_checkbox_use_environment_stateChanged(int state) {
 	}
 	ui.line_edit_master->setEnabled(enabled);
 	ui.line_edit_host->setEnabled(enabled);
-	//ui.line_edit_topic->setEnabled(enabled);
 }
 
 /*****************************************************************************
@@ -283,23 +283,24 @@ void MainWindow::on_actionAbout_triggered() {
 *****************************************************************************/
 
 void MainWindow::ReadSettings() {
-    QSettings settings("Qt-Ros Package", "test_qt");
-    restoreGeometry(settings.value("geometry").toByteArray());
-    restoreState(settings.value("windowState").toByteArray());
-    QString master_url = settings.value("master_url",QString("http://192.168.1.2:11311/")).toString();
-    QString host_url = settings.value("host_url", QString("192.168.1.3")).toString();
-    //QString topic_name = settings.value("topic_name", QString("/chatter")).toString();
+    //QSetting for restore setting
+    QSettings settings("Qt-Ros Package", "test_qt");//organization and application, for access to settings save
+    restoreGeometry(settings.value("geometry").toByteArray());//window size
+    restoreState(settings.value("windowState").toByteArray());//dock and toolbar state
+
+    //Master and Host URLs
+    QString master_url = settings.value("master_url",QString("http://192.168.0.xxx:11311/")).toString();
+    QString host_url = settings.value("host_url", QString("192.168.0.x")).toString();
     ui.line_edit_master->setText(master_url);
     ui.line_edit_host->setText(host_url);
-    //ui.line_edit_topic->setText(topic_name);
+
     bool remember = settings.value("remember_settings", false).toBool();
     ui.checkbox_remember_settings->setChecked(remember);
-    bool checked = settings.value("use_environment_variables", false).toBool();
-    ui.checkbox_use_environment->setChecked(checked);
-    if ( checked ) {
+    bool use_env_checked = settings.value("use_environment_variables", false).toBool();
+    ui.checkbox_use_environment->setChecked(use_env_checked);
+    if ( use_env_checked ) {
     	ui.line_edit_master->setEnabled(false);
     	ui.line_edit_host->setEnabled(false);
-    	//ui.line_edit_topic->setEnabled(false);
     }
 }
 
@@ -307,7 +308,6 @@ void MainWindow::WriteSettings() {
     QSettings settings("Qt-Ros Package", "test_qt");
     settings.setValue("master_url",ui.line_edit_master->text());
     settings.setValue("host_url",ui.line_edit_host->text());
-    //settings.setValue("topic_name",ui.line_edit_topic->text());
     settings.setValue("use_environment_variables",QVariant(ui.checkbox_use_environment->isChecked()));
     settings.setValue("geometry", saveGeometry());
     settings.setValue("windowState", saveState());
@@ -317,16 +317,14 @@ void MainWindow::WriteSettings() {
 
 void MainWindow::closeEvent(QCloseEvent *event)
 {
-	WriteSettings();
-    if(plg != nullptr){
-        if(plg->state() == QProcess::ProcessState::Running){
-            plg->close();
-        }
-    }
+    WriteSettings();//save the settings at the end.
 	QMainWindow::closeEvent(event);
 }
 
 
+/////////////////////////////////
+////Micro-controller
+///
 //Once the worker emit update_imu, the Main Gui will update the display.
 void MainWindow::window_update_imu(QString imu_data){
     QStringList imu_text = imu_data.split(";");
@@ -337,7 +335,6 @@ void MainWindow::window_update_imu(QString imu_data){
     ui.y_acc_label->setText(imu_text[4]);
     ui.z_acc_label->setText(imu_text[5].trimmed());
 }
-
 
 //Control the LED
 void MainWindow::on_led_btn_clicked(){
@@ -418,13 +415,9 @@ void MainWindow::on_serial_scan_btn_clicked(){
     QStringList qls = scanPort();
     ui.serial_comboBox->addItems(qls);
 }
-
-//Display all avaiable ports for GPS
-void MainWindow::on_serial_scan_gps_btn_clicked(){
-    ui.serial_gps_serial_ComboBox->clear();
-    QStringList qls = scanPort();
-    ui.serial_gps_serial_ComboBox->addItems(qls);
-}
+//
+////Micro-controller
+///////////////////////////////////////
 
 //This is a button test for Python plugin.
 //Nothing but a bash shell.
@@ -443,6 +436,13 @@ void MainWindow::on_plugin_test_btn_clicked(){
 ///////////////////////////
 ////GPS
 ///
+//Display all avaiable ports for GPS
+void MainWindow::on_serial_scan_gps_btn_clicked(){
+    ui.serial_gps_serial_ComboBox->clear();
+    QStringList qls = scanPort();
+    ui.serial_gps_serial_ComboBox->addItems(qls);
+}
+
 void MainWindow::on_gps_connect_btn_clicked(){
     ui.gps_status_label->setText("Launching GPS");
     if(gps_process == nullptr){
@@ -477,7 +477,6 @@ void MainWindow::output_gps_process_standard(){
     ui.gps_output_text->appendHtml("<p style=\"color:blue\">" + gps_process->readAllStandardOutput() +"</p>");
 }
 
-
 void MainWindow::on_gps_disconnect_btn_clicked(){
     gps_process->write("rosnode kill /nmea_serial_driver \n");
     gps_process->close();
@@ -505,6 +504,9 @@ void MainWindow::slot_table_display_gps(const sensor_msgs::NavSatFix msg){
 ////GPS
 ///////////////////////////////////////////
 
+//////////////////////////////
+/// USB Camera
+///
 void MainWindow::on_camera_scan_btn_clicked(){
     qDebug() << "Number of camera found: " << QCameraInfo::availableCameras().count();
     QList<QCameraInfo> cameras = QCameraInfo::availableCameras();
@@ -585,6 +587,8 @@ void MainWindow::update_video_time(qint64 t){
     QString time_str = QString::number((t-t%100)/1000.0);
     ui.record_time_label->setText("Recorded: " + time_str + "s");
 }
+////USB Camera
+////////////////////////////////////////////
 
 void MainWindow::on_load_video_btn_clicked(){
     QString fileName = QFileDialog::getOpenFileName(this,"Select Video",qApp->applicationDirPath());
@@ -752,9 +756,5 @@ void MainWindow::output_sick_process_error(){
 ////SICK LASER
 //////////////
 }  // namespace test_qt
-
-void test_qt::MainWindow::okei(){
-    qDebug() << "okei";
-}
 
 

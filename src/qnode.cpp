@@ -74,22 +74,26 @@ bool QNode::init(const std::string &master_url, const std::string &host_url) {
 void QNode::run() {
 	ros::Rate loop_rate(1);
 	int count = 0;
-	while ( ros::ok() ) {
-
+    while ( ros::ok() && ros::master::check()) {
 		std_msgs::String msg;
 		std::stringstream ss;
-		ss << "hello world " << count;
+        ss << count;
 		msg.data = ss.str();
 		chatter_publisher.publish(msg);
-		log(Info,std::string("I sent: ")+msg.data);
+        log(Info,std::string("ROS Connection Alive for: ")+msg.data + "sec");
 		ros::spinOnce();
 		loop_rate.sleep();
 		++count;
 	}
+    log(Fatal, std::string("Connection dead"));
+    if (!ros::ok()){
+        log(Fatal, std::string("App failed to connect the Master"));
+    }else if(!ros::master::check()){
+        log(Fatal, std::string("Master dead"));
+    }
 	std::cout << "Ros shutdown, proceeding to close the gui." << std::endl;
-	Q_EMIT rosShutdown(); // used to signal the gui for a shutdown (useful to roslaunch)
+    //Q_EMIT rosShutdown(); // used to signal the gui for a shutdown (useful to roslaunch)
 }
-
 
 void QNode::log( const LogLevel &level, const std::string &msg) {
 	logging_model.insertRows(logging_model.rowCount(),1);

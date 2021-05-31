@@ -69,7 +69,7 @@ public Q_SLOTS:
     ** Format: on_UiElement_Signal()
 	*******************************************/
 	void on_actionAbout_triggered();
-    void on_button_connect_clicked(bool check );
+    void on_button_connect_clicked();
 	void on_checkbox_use_environment_stateChanged(int state);
     void on_plugin_test_btn_clicked();
     //gps btn
@@ -91,7 +91,7 @@ public Q_SLOTS:
     void slot_table_display_gps(const sensor_msgs::NavSatFix);
     void output_gps_process_error();
     void output_gps_process_standard();
-    //Camera
+    //USB Camera
     void on_camera_scan_btn_clicked();
     void on_camera_connect_btn_clicked();
     void on_capture_btn_clicked();
@@ -117,6 +117,7 @@ public Q_SLOTS:
     void output_sick_process_error();
 
     //RVIZ
+    void init_rviz_ui_elements();
     void slot_fixed_frame_changed(QString);
     void slot_mainwindow_display_grid(int state);
     void slot_mainwindow_display_scan(int state);
@@ -129,11 +130,9 @@ public Q_SLOTS:
     *******************************************/
     void updateLoggingView();
 
-    void okei();
-
-
 private:
     Ui::MainWindowDesign ui;//header file built from .ui file
+    Ui::Dialog test_ui;
     bool plugin_on = false;//A flag to avoid re-create a new bash (plugin)
     bool gps_on = false;
     QProcess *plg = nullptr;

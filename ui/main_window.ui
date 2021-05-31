@@ -7,15 +7,15 @@
     <x>0</x>
     <y>0</y>
     <width>1095</width>
-    <height>787</height>
+    <height>818</height>
    </rect>
   </property>
   <property name="windowTitle">
-   <string>QRosApp</string>
+   <string>Test-Qt-ROS</string>
   </property>
   <property name="windowIcon">
    <iconset>
-    <normaloff>:/images/icon.png</normaloff>:/images/icon.png</iconset>
+    <normaloff>../../../../.designer/resources/images/icon.png</normaloff>../../../../.designer/resources/images/icon.png</iconset>
   </property>
   <property name="locale">
    <locale language="English" country="Australia"/>
@@ -31,7 +31,7 @@
        </sizepolicy>
       </property>
       <property name="currentIndex">
-       <number>3</number>
+       <number>4</number>
       </property>
       <widget class="QWidget" name="tab_1">
        <attribute name="title">
@@ -749,6 +749,13 @@
      </widget>
     </item>
     <item>
+     <widget class="QPushButton" name="plugin_test_btn">
+      <property name="text">
+       <string>Plugin Test</string>
+      </property>
+     </widget>
+    </item>
+    <item>
      <widget class="QTabWidget" name="tab_manager">
       <property name="minimumSize">
        <size>
@@ -760,74 +767,13 @@
        <locale language="English" country="Australia"/>
       </property>
       <property name="currentIndex">
-       <number>1</number>
+       <number>0</number>
       </property>
-      <widget class="QWidget" name="tab_status">
-       <attribute name="title">
-        <string>Ros Communications</string>
-       </attribute>
-       <layout class="QVBoxLayout" name="verticalLayout_2">
-        <item>
-         <widget class="QPushButton" name="plugin_test_btn">
-          <property name="text">
-           <string>Plugin Test</string>
-          </property>
-         </widget>
-        </item>
-        <item>
-         <widget class="QGroupBox" name="groupBox_12">
-          <property name="sizePolicy">
-           <sizepolicy hsizetype="MinimumExpanding" vsizetype="Preferred">
-            <horstretch>0</horstretch>
-            <verstretch>0</verstretch>
-           </sizepolicy>
-          </property>
-          <property name="title">
-           <string>Logging</string>
-          </property>
-          <layout class="QGridLayout" name="gridLayout_3">
-           <item row="1" column="1">
-            <widget class="QListView" name="view_logging"/>
-           </item>
-          </layout>
-         </widget>
-        </item>
-       </layout>
-      </widget>
       <widget class="QWidget" name="tab">
        <attribute name="title">
         <string>Visualization Display</string>
        </attribute>
        <layout class="QVBoxLayout" name="verticalLayout_7">
-        <item>
-         <widget class="QTreeWidget" name="rviz_treeWidget">
-          <property name="sizePolicy">
-           <sizepolicy hsizetype="Expanding" vsizetype="Preferred">
-            <horstretch>0</horstretch>
-            <verstretch>0</verstretch>
-           </sizepolicy>
-          </property>
-          <property name="maximumSize">
-           <size>
-            <width>16777215</width>
-            <height>150</height>
-           </size>
-          </property>
-          <property name="columnCount">
-           <number>2</number>
-          </property>
-          <column>
-           <property name="text">
-            <string>element</string>
-           </property>
-          </column>
-          <column>
-           <property name="text">
-            <string>setting</string>
-           </property>
-          </column>
-         </widget>
-        </item>
         <item>
          <widget class="QFrame" name="frame_rviz">
           <property name="sizePolicy">
@@ -884,14 +830,14 @@
    <property name="minimumSize">
     <size>
      <width>325</width>
-     <height>389</height>
+     <height>659</height>
     </size>
    </property>
    <property name="allowedAreas">
-    <set>Qt::RightDockWidgetArea</set>
+    <set>Qt::LeftDockWidgetArea|Qt::RightDockWidgetArea</set>
    </property>
    <property name="windowTitle">
-    <string>Command Panel</string>
+    <string>ROS Connection</string>
    </property>
    <attribute name="dockWidgetArea">
     <number>2</number>
@@ -959,30 +905,7 @@
              </property>
             </widget>
            </item>
-           <item row="4" column="0">
-            <widget class="QLabel" name="label_3">
-             <property name="frameShape">
-              <enum>QFrame::StyledPanel</enum>
-             </property>
-             <property name="frameShadow">
-              <enum>QFrame::Raised</enum>
-             </property>
-             <property name="text">
-              <string>Ros Hostname</string>
-             </property>
-            </widget>
-           </item>
-           <item row="5" column="0" colspan="2">
-            <widget class="QLineEdit" name="line_edit_topic">
-             <property name="enabled">
-              <bool>false</bool>
-             </property>
-             <property name="text">
-              <string>unused</string>
-             </property>
-            </widget>
-           </item>
-           <item row="6" column="0" colspan="2">
+           <item row="4" column="0" colspan="2">
             <widget class="QCheckBox" name="checkbox_use_environment">
              <property name="layoutDirection">
               <enum>Qt::RightToLeft</enum>
@@ -992,7 +915,7 @@
              </property>
             </widget>
            </item>
-           <item row="7" column="0" colspan="2">
+           <item row="5" column="0" colspan="2">
             <widget class="QCheckBox" name="checkbox_remember_settings">
              <property name="layoutDirection">
               <enum>Qt::RightToLeft</enum>
@@ -1002,7 +925,7 @@
              </property>
             </widget>
            </item>
-           <item row="8" column="0">
+           <item row="6" column="0">
             <spacer name="horizontalSpacer">
              <property name="orientation">
               <enum>Qt::Horizontal</enum>
@@ -1015,7 +938,7 @@
              </property>
             </spacer>
            </item>
-           <item row="8" column="1">
+           <item row="6" column="1">
             <widget class="QPushButton" name="button_connect">
              <property name="enabled">
               <bool>true</bool>
@@ -1035,6 +958,68 @@
              <property name="text">
               <string>Connect</string>
              </property>
+            </widget>
+           </item>
+          </layout>
+         </widget>
+        </item>
+        <item>
+         <widget class="QGroupBox" name="groupBox_12">
+          <property name="sizePolicy">
+           <sizepolicy hsizetype="MinimumExpanding" vsizetype="Preferred">
+            <horstretch>0</horstretch>
+            <verstretch>0</verstretch>
+           </sizepolicy>
+          </property>
+          <property name="title">
+           <string>ROS Logging</string>
+          </property>
+          <layout class="QGridLayout" name="gridLayout_3">
+           <item row="1" column="1">
+            <widget class="QListView" name="view_logging"/>
+           </item>
+          </layout>
+         </widget>
+        </item>
+        <item>
+         <widget class="QGroupBox" name="display_setting">
+          <property name="title">
+           <string>Display Setting</string>
+          </property>
+          <layout class="QGridLayout" name="gridLayout_2">
+           <item row="0" column="0">
+            <widget class="QTreeWidget" name="rviz_treeWidget">
+             <property name="sizePolicy">
+              <sizepolicy hsizetype="Expanding" vsizetype="Preferred">
+               <horstretch>0</horstretch>
+               <verstretch>0</verstretch>
+              </sizepolicy>
+             </property>
+             <property name="minimumSize">
+              <size>
+               <width>0</width>
+               <height>150</height>
+              </size>
+             </property>
+             <property name="maximumSize">
+              <size>
+               <width>16777215</width>
+               <height>150</height>
+              </size>
+             </property>
+             <property name="columnCount">
+              <number>2</number>
+             </property>
+             <column>
+              <property name="text">
+               <string>element</string>
+              </property>
+             </column>
+             <column>
+              <property name="text">
+               <string>setting</string>
+              </property>
+             </column>
             </widget>
            </item>
           </layout>
