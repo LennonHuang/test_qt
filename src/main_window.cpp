@@ -56,6 +56,7 @@ MainWindow::MainWindow(int argc, char** argv, QWidget *parent)
     //Init User Interface
     ui.disconnect_ip_camera_btn->setEnabled(false);
     ui.disconnect_ip_camera_btn_2->setEnabled(false);
+    ui.close_bag_btn->setEnabled(false);
 
     //Init All RVIZ Elements
     //init the tree widget
@@ -154,7 +155,8 @@ MainWindow::MainWindow(int argc, char** argv, QWidget *parent)
     connect(camera_check_box,SIGNAL(stateChanged(int)),this,SLOT(slot_mainwindow_display_camera(int)));
 }
 
-MainWindow::~MainWindow() {}
+MainWindow::~MainWindow() {
+}
 
 /*****************************************************************************
 ** Implementation [Slots]
@@ -347,8 +349,22 @@ void MainWindow::on_led_btn_clicked(){
     }
 }
 
+void MainWindow::on_clean_button_clicked(){
+    on_disconnect_laser_btn_clicked();
+    on_disconnect_ip_camera_btn_clicked();
+    on_disconnect_ip_camera_btn_2_clicked();
+    if(is_bag_playing){
+        on_load_bag_btn_clicked();
+    }
+    if(is_urdf_loaded){
+        on_load_coordinate_btn_clicked();
+    }
+}
+
 void MainWindow::on_quit_button_clicked(){
+    on_clean_button_clicked();
     qDebug() << "Quiting MainWindow...";
+    close();
 }
 
 //Try to connect to the imu//
@@ -418,21 +434,29 @@ void MainWindow::on_serial_scan_btn_clicked(){
 //
 ////Micro-controller
 ///////////////////////////////////////
-
-//This is a button test for Python plugin.
-//Nothing but a bash shell.
-void MainWindow::on_plugin_test_btn_clicked(){
-    if(!plugin_on){
-       plg = new QProcess(this);
-       plugin_on = true;
-       plg->start("bash");
+void MainWindow::on_load_coordinate_btn_clicked(){
+    if(!is_urdf_loaded){
+        urdf_process = new QProcess();
+        urdf_process->start("bash");
+        urdf_process->write("roslaunch test_qt sick_tim_model.launch \n");
+        is_urdf_loaded = true;
+        ui.load_coordinate_btn->setText("Stop Coordinate Info");
+    }else{
+        urdf_process->close();
+        urdf_process->terminate();
+        urdf_process->start("bash");
+        urdf_process->write("rosnode kill /robot_state_publisher \n");
+        urdf_process->write("rosnode kill /tf_laser_to_gps \n");
+        urdf_process->write("exit \n");
+        urdf_process->waitForFinished();
+        urdf_process->close();
+        urdf_process->terminate();
+        delete urdf_process;
+        urdf_process = nullptr;
+        is_urdf_loaded = false;
+        ui.load_coordinate_btn->setText("Reload Coordinate Info");
     }
-    plg->write("rqt_mypkg\n");
-    std::cout << "Processing" << std::endl;
-    plg->waitForStarted();
-
 }
-
 ///////////////////////////
 ////GPS
 ///
@@ -625,10 +649,14 @@ void MainWindow::on_connect_ip_camera_btn_clicked(){
 }
 
 void MainWindow::on_disconnect_ip_camera_btn_clicked(){
+    if(ip_camera_process == nullptr){return;}
     ip_camera_process->close();
     ip_camera_process->start("bash");
     ip_camera_process->write("rosnode kill /axis_M3408-P \n");
+    ip_camera_process->write("exit \n");
+    ip_camera_process->waitForFinished();
     ui.connect_ip_camera_btn->setEnabled(true);
+    ui.disconnect_ip_camera_btn->setEnabled(false);
 }
 
 void MainWindow::on_camera_checkBox_stateChanged(int state){
@@ -658,10 +686,14 @@ void MainWindow::on_connect_ip_camera_btn_2_clicked(){
 }
 
 void MainWindow::on_disconnect_ip_camera_btn_2_clicked(){
+    if(ip_camera_process_2 == nullptr){return;}
     ip_camera_process_2->close();
     ip_camera_process_2->start("bash");
     ip_camera_process_2->write("rosnode kill /axis_214 \n");
+    ip_camera_process_2->write("exit \n");
+    ip_camera_process_2->waitForFinished();
     ui.connect_ip_camera_btn_2->setEnabled(true);
+    ui.disconnect_ip_camera_btn_2->setEnabled(false);
 }
 
 void MainWindow::on_camera_checkBox_2_stateChanged(int state){
@@ -737,12 +769,17 @@ void MainWindow::on_connect_laser_btn_clicked(){
     connect(sick_lidar_process,&QProcess::readyReadStandardOutput,this,&MainWindow::output_sick_process);
     ui.scan_ip_label->setText("laser Launched");
     sick_lidar_process->write("exit\n");
+
 }
 
 void MainWindow::on_disconnect_laser_btn_clicked(){
+    if(sick_lidar_process == nullptr){return;}
     sick_lidar_process->close();
     sick_lidar_process->start("bash");
     sick_lidar_process->write("rosnode kill /sick_TM571 \n");
+    sick_lidar_process->write("exit \n");
+    sick_lidar_process->waitForFinished();
+    ui.scan_ip_label->setText("Laser Disconnected");
 }
 
 void MainWindow::output_sick_process(){
@@ -755,6 +792,90 @@ void MainWindow::output_sick_process_error(){
 }
 ////SICK LASER
 //////////////
+
+////////////////////
+///ROS Bag
+
+void MainWindow::slot_start_bag(){
+    if(!bag_path.endsWith(".bag")){
+        bag_path = bag_path + ".bag";
+    }
+    ui.bag_path_label->setText(bag_path);
+    qnode.qnode_bag.open(bag_path.toStdString(), rosbag::BagMode::Write);
+
+    ros::NodeHandle nh;
+    if(select_sensor_ui.sick_laser_checkBox->isChecked()){
+        qnode.laser_sub = nh.subscribe("scan",1000,&QNode::laser_callback,&qnode);//queue size is 1000 messages.
+    }
+
+    if(select_sensor_ui.camera_1_checkBox->isChecked()){
+        qnode.fisheye_sub = nh.subscribe("image_raw/compressed",1000,&QNode::fisheye_callback, &qnode);
+    }
+
+    if(select_sensor_ui.camera_2_checkBox->isChecked()){
+        qnode.axis214_sub = nh.subscribe("image_214/compressed",1000,&QNode::Axis214_callback, &qnode);
+    }
+
+    ui.start_bag_btn->setEnabled(false);
+    ui.close_bag_btn->setEnabled(true);
+    ui.collect_status->setText("Recording...");
+}
+
+void MainWindow::on_start_bag_btn_clicked(){
+    bag_path = QFileDialog::getSaveFileName(this,tr("Save Path"),tr("Bag Files(*.bag)"));
+    if (bag_path.isEmpty()){
+        return;
+    }
+    select_dial = new QDialog();
+    select_sensor_ui.setupUi(select_dial);
+    select_dial->show();
+    connect(select_dial, SIGNAL(accepted()),this,SLOT(slot_start_bag()));
+}
+
+void MainWindow::on_close_bag_btn_clicked(){
+    //Shutdown the subscriber before close the bag, otherwise will crash since other threads still writing to the bag
+    qnode.laser_sub.shutdown();
+    qnode.fisheye_sub.shutdown();
+    qnode.axis214_sub.shutdown();
+    qnode.qnode_bag.close();
+
+    ui.start_bag_btn->setEnabled(true);
+    ui.close_bag_btn->setEnabled(false);
+    ui.collect_status->setText("Done.");
+}
+
+void MainWindow::on_load_bag_btn_clicked(){
+    if(!is_bag_playing){
+        bag_path = QFileDialog::getOpenFileName(this,tr("Save Path"),tr("Bag Files(*.bag)"));
+        if (bag_path.isEmpty()){
+            return;
+        }
+        //qDebug() << bag_path;
+        bag_player = new QProcess();
+        bag_player->start("bash");
+        bag_player->write("rosbag play " + bag_path.toUtf8() +" --loop __name:=my_bag \n");
+        ui.collect_status->setText("Playing data...");
+        ui.load_bag_btn->setText("Stop playing");
+        is_bag_playing = true;
+    }else{
+        bag_player->close();//Have to close before termination. Otherwise: "Destroyed while running..."
+        bag_player->terminate();
+        QProcess *bag_killer = new QProcess();
+        bag_killer->start("bash");
+        bag_killer->write("rosnode kill /my_bag \n");
+        bag_killer->write("exit \n");
+        bag_killer->waitForFinished();
+        bag_killer->terminate();
+        delete bag_killer;
+        delete bag_player;
+        bag_player = nullptr;
+        ui.collect_status->setText("Stop Playing Data");
+        ui.load_bag_btn->setText("Load Data");
+    }
+}
+
+///ROS Bag
+/// ////////////////
 }  // namespace test_qt
 
 

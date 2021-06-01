@@ -16,7 +16,7 @@
 #include <QtGui>
 #include <QSpinBox>
 #include "ui_main_window.h"
-#include "ui_test_window.h"
+#include "ui_select_dialog_window.h"
 #include "qnode.hpp"
 #include "worker.hpp"
 #include "gps_worker.hpp"
@@ -61,6 +61,7 @@ public:
 	void closeEvent(QCloseEvent *event); // Overloaded function
 	void showNoMasterMessage();
     QStringList scanPort();
+    QString bag_path;
 
 
 public Q_SLOTS:
@@ -68,10 +69,11 @@ public Q_SLOTS:
 	** Auto-connections (connectSlotsByName())
     ** Format: on_UiElement_Signal()
 	*******************************************/
+    void on_clean_button_clicked();
+    void on_quit_button_clicked();
 	void on_actionAbout_triggered();
     void on_button_connect_clicked();
 	void on_checkbox_use_environment_stateChanged(int state);
-    void on_plugin_test_btn_clicked();
     //gps btn
     void on_gps_connect_btn_clicked();
     void on_gps_disconnect_btn_clicked();
@@ -83,7 +85,6 @@ public Q_SLOTS:
     void on_serial_scan_gps_btn_clicked();
     void on_serial_scan_btn_clicked();
     void on_led_btn_clicked();
-    void on_quit_button_clicked();
     void window_update_imu(QString imu_data);
     void catch_imu_connection_error(QString error);
     //GPS Process
@@ -125,6 +126,15 @@ public Q_SLOTS:
     void slot_mainwindow_display_tf(int state);
     void slot_mainwindow_display_gps(int state);
 
+    //ROS Bag
+    void on_start_bag_btn_clicked();
+    void on_close_bag_btn_clicked();
+    void slot_start_bag();
+    void on_load_bag_btn_clicked();
+
+    //Load URDF
+    void on_load_coordinate_btn_clicked();
+
     /******************************************
     ** Manual connections
     *******************************************/
@@ -132,7 +142,7 @@ public Q_SLOTS:
 
 private:
     Ui::MainWindowDesign ui;//header file built from .ui file
-    Ui::Dialog test_ui;
+    Ui::sensor_select_dialog select_sensor_ui;
     bool plugin_on = false;//A flag to avoid re-create a new bash (plugin)
     bool gps_on = false;
     QProcess *plg = nullptr;
@@ -167,6 +177,15 @@ private:
     QCameraImageCapture *imageCapture;
     QMediaRecorder *recorder;
     QMediaPlayer *player;
+
+    //ROS bag
+    QDialog *select_dial = nullptr;
+    QProcess *bag_player = nullptr;
+    bool is_bag_playing = false;
+
+    //URDF
+    QProcess *urdf_process = nullptr;
+    bool is_urdf_loaded = false;
 };
 
 }  // namespace test_qt

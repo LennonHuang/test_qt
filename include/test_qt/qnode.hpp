@@ -25,6 +25,9 @@
 #include <QThread>
 #include <QStringListModel>
 #include <sensor_msgs/NavSatFix.h>
+#include <sensor_msgs/LaserScan.h>
+#include <rosbag/bag.h>
+#include <sensor_msgs/CompressedImage.h>
 
 
 /*****************************************************************************
@@ -59,6 +62,13 @@ public:
 
 	QStringListModel* loggingModel() { return &logging_model; }
 	void log( const LogLevel &level, const std::string &msg);
+    rosbag::Bag qnode_bag;
+    ros::Subscriber laser_sub;
+    void laser_callback(const sensor_msgs::LaserScan &msg);
+    ros::Subscriber fisheye_sub;
+    void fisheye_callback(const sensor_msgs::CompressedImage &msg);
+    ros::Subscriber axis214_sub;
+    void Axis214_callback(const sensor_msgs::CompressedImage &msg);
 
 Q_SIGNALS:
 	void loggingUpdated();

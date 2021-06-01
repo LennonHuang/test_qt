@@ -134,4 +134,16 @@ void QNode::gps_callback(const sensor_msgs::NavSatFix &msg){
     emit update_gps(msg);
 }
 
+void QNode::laser_callback(const sensor_msgs::LaserScan &msg){
+    qnode_bag.write("scan",ros::Time::now(),msg);
+}
+
+void QNode::fisheye_callback(const sensor_msgs::CompressedImage &msg){
+    qnode_bag.write("image_raw/compressed",ros::Time::now(),msg);
+}
+
+void QNode::Axis214_callback(const sensor_msgs::CompressedImage &msg){
+    qnode_bag.write("image_214/compressed",ros::Time::now(),msg);
+}
+
 }  // namespace test_qt
